@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.env
+.env.*
+android
+test-results
+playwright-report
+.impeccable
+docs/screenshots
