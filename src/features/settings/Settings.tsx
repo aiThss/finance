@@ -1,5 +1,9 @@
+import { GeminiKeySettings } from "./GeminiKeySettings";
+import { ApkUpdates } from "./ApkUpdates";
+import { version } from "../../../package.json";
+import { SelectField } from "../../components/ui/SelectField";
 import { useRef, useState } from "react";
-import { Download, Upload, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Download, Upload, ShieldCheck } from "lucide-react";
 import { useApp } from "../../app/context";
 import { settingsRepository } from "../../db/repositories";
 import {
@@ -18,10 +22,6 @@ export default function Settings() {
   const [backup, setBackup] = useState<Backup | null>(null);
   const [confirmText, setConfirmText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [connection, setConnection] = useState("");
-  const [token, setToken] = useState(
-    () => sessionStorage.getItem("ai-access-token") ?? "",
-  );
   const file = useRef<HTMLInputElement>(null);
   const s = data.settings;
   async function patch(value: Partial<typeof s>) {
@@ -62,7 +62,7 @@ export default function Settings() {
         <h2>Hiển thị</h2>
         <label>
           Giao diện
-          <select
+          <SelectField
             value={s.theme}
             onChange={(e) =>
               void patch({ theme: e.target.value as typeof s.theme })
@@ -71,25 +71,25 @@ export default function Settings() {
             <option value="dark">Tối</option>
             <option value="light">Sáng</option>
             <option value="system">Theo thiết bị</option>
-          </select>
+          </SelectField>
         </label>
         <div className="form-grid">
           <label>
             Tiền tệ
-            <select value="VND" disabled>
+            <SelectField value="VND" disabled>
               <option>VND</option>
-            </select>
+            </SelectField>
           </label>
           <label>
             Ngôn ngữ
-            <select value="vi" disabled>
+            <SelectField value="vi" disabled>
               <option value="vi">Tiếng Việt</option>
-            </select>
+            </SelectField>
           </label>
         </div>
         <label>
           Ngày đầu tuần
-          <select
+          <SelectField
             value={s.firstDay}
             onChange={(e) =>
               void patch({ firstDay: e.target.value as typeof s.firstDay })
@@ -97,7 +97,7 @@ export default function Settings() {
           >
             <option value="monday">Thứ Hai</option>
             <option value="sunday">Chủ nhật</option>
-          </select>
+          </SelectField>
         </label>
         <label className="toggle-row">
           <span>
@@ -189,52 +189,7 @@ export default function Settings() {
             }
           />
         </label>
-        <p className="muted">
-          Chỉ nội dung bạn gửi, ảnh bạn chọn hoặc số liệu tổng hợp cần thiết mới
-          được gửi đến Google qua backend. AI tạo gợi ý, không tự sửa giao dịch.
-          Tắt AI không ảnh hưởng quản lý thu chi.
-        </p>
-        <label>
-          Mã truy cập AI (nếu quản trị viên đã đặt)
-          <input
-            type="password"
-            autoComplete="off"
-            value={token}
-            onChange={(e) => {
-              setToken(e.target.value);
-              sessionStorage.setItem("ai-access-token", e.target.value);
-            }}
-          />
-        </label>
-        <small>
-          Mã chỉ giữ trong phiên hiện tại. Không nhập Gemini API key vào đây.
-        </small>
-        <button
-          onClick={async () => {
-            setConnection("Đang kiểm tra…");
-            try {
-              const res = await fetch(
-                `${import.meta.env.VITE_API_BASE_URL ?? ""}/api/health`,
-                { signal: AbortSignal.timeout(8000) },
-              );
-              if (!res.ok) throw new Error();
-              const body = await res.json();
-              setConnection(
-                body.aiConfigured
-                  ? "Backend sẵn sàng; đã cấu hình Gemini."
-                  : "Backend sẵn sàng; chưa cấu hình Gemini API key.",
-              );
-            } catch {
-              setConnection(
-                "Không kết nối được backend. Kiểm tra mạng hoặc URL API.",
-              );
-            }
-          }}
-        >
-          <CheckCircle2 size={17} />
-          Kiểm tra kết nối backend
-        </button>
-        {connection && <p role="status">{connection}</p>}
+        <GeminiKeySettings />
       </section>
       <section className="settings-section">
         <h2>Giao dịch định kỳ</h2>
@@ -245,7 +200,7 @@ export default function Settings() {
       </section>
       <section className="settings-section">
         <h2>
-          Túi Nhỏ <span className="muted">1.0.0</span>
+          Túi Nhỏ <span className="muted">{version}</span>
         </h2>
         <p>Một chút ghi chép, nhẹ lòng mỗi ngày.</p>
         <p className="muted">
@@ -268,6 +223,28 @@ export default function Settings() {
           </button>
         )}
       </section>
+      <ApkUpdates />
+      {import.meta.env.DEV && (
+        <div className="button-stack">
+          {([1000, 5000, 10000] as const).map((count) => (
+            <button
+              key={count}
+              onClick={async () => {
+                try {
+                  const { seedPerformance } =
+                    await import("../../db/seed-performance");
+                  await seedPerformance(count);
+                  notify(`Đã tạo ${count} giao dịch thử`);
+                } catch (e) {
+                  setError(message(e));
+                }
+              }}
+            >
+              Tạo {count.toLocaleString("vi-VN")} giao dịch thử (bộ nhớ trống)
+            </button>
+          ))}
+        </div>
+      )}
       <ErrorText error={error} />
       {backup && (
         <Sheet title="Xác nhận khôi phục" onClose={() => setBackup(null)}>

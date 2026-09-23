@@ -26,6 +26,8 @@ export function createApp({ env = process.env, generate } = {}) {
           imgSrc: ["'self'", "data:", "blob:"],
           connectSrc: [
             "'self'",
+            "https://api.github.com",
+            "https://generativelanguage.googleapis.com",
             ...(env.PUBLIC_API_ORIGIN ? [env.PUBLIC_API_ORIGIN] : []),
           ],
           fontSrc: ["'self'"],

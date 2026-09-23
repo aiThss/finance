@@ -40,7 +40,9 @@ export const dayKey = (date: string | Date) =>
 export const active = (transactions: Transaction[]) =>
   transactions.filter((t) => !t.deletedAt);
 export function sum(values: number[]): number {
-  const n = values.reduce((a, b) => a + BigInt(b), 0n);
+  return safeMoney(values.reduce((a, b) => a + BigInt(b), 0n));
+}
+export function safeMoney(n: bigint): number {
   if (
     n > BigInt(Number.MAX_SAFE_INTEGER) ||
     n < BigInt(Number.MIN_SAFE_INTEGER)
@@ -59,11 +61,38 @@ export function delta(t: Transaction, id: string): number {
   if (t.accountId !== id) return 0;
   return t.type === "expense" ? -t.amountMinor : t.amountMinor;
 }
+// History is authoritative. Keep intermediate totals exact, checking each final
+// account balance as well as the combined total (even if accounts cancel out).
+export function accountBalances(
+  accounts: Account[],
+  transactions: Transaction[],
+) {
+  const deltas = new Map<string, bigint>();
+  const add = (id: string | undefined, amount: bigint) => {
+    if (id) deltas.set(id, (deltas.get(id) ?? 0n) + amount);
+  };
+  for (const t of transactions) {
+    if (t.deletedAt) continue;
+    const amount = BigInt(t.amountMinor);
+    if (t.type === "transfer") {
+      add(t.fromAccountId, -amount);
+      add(t.toAccountId, amount);
+    } else add(t.accountId, t.type === "expense" ? -amount : amount);
+  }
+  return new Map(
+    accounts.map((a) => [
+      a.id,
+      safeMoney(BigInt(a.openingBalanceMinor) + (deltas.get(a.id) ?? 0n)),
+    ]),
+  );
+}
+export const activeAccounts = (accounts: Account[]) =>
+  accounts.filter((a) => !a.archived);
 export const balanceService = {
   getAccountBalance: (a: Account, ts: Transaction[]) =>
     sum([a.openingBalanceMinor, ...ts.map((t) => delta(t, a.id))]),
   getTotalBalance: (as: Account[], ts: Transaction[]) =>
-    sum(as.map((a) => balanceService.getAccountBalance(a, ts))),
+    sum([...accountBalances(as, ts).values()]),
 };
 export function summary(ts: Transaction[]) {
   const items = active(ts);
@@ -81,13 +110,14 @@ export const reportService = {
   getCategoryBreakdown: (ts: Transaction[]) => breakdown(ts, "categoryId"),
 };
 export function breakdown(ts: Transaction[], field: "categoryId" | "merchant") {
-  const groups = new Map<string, number[]>();
-  for (const t of active(ts).filter((t) => t.type === "expense")) {
+  const groups = new Map<string, bigint>();
+  for (const t of ts) {
+    if (t.deletedAt || t.type !== "expense") continue;
     const key = t[field] || "Khác";
-    groups.set(key, [...(groups.get(key) ?? []), t.amountMinor]);
+    groups.set(key, (groups.get(key) ?? 0n) + BigInt(t.amountMinor));
   }
   return [...groups]
-    .map(([key, values]) => ({ key, amount: sum(values) }))
+    .map(([key, value]) => ({ key, amount: safeMoney(value) }))
     .sort((a, b) => b.amount - a.amount);
 }
 export function budgetStatus(b: Budget, ts: Transaction[], month: string) {

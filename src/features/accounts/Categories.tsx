@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useApp } from "../../app/context";
@@ -100,7 +101,7 @@ export default function Categories() {
             </label>
             <label>
               Loại
-              <select
+              <SelectField
                 disabled={
                   data.transactions.some((t) => t.categoryId === edit.id) ||
                   data.recurring.some(
@@ -115,7 +116,7 @@ export default function Categories() {
               >
                 <option value="expense">Chi tiêu</option>
                 <option value="income">Thu nhập</option>
-              </select>
+              </SelectField>
             </label>
             <fieldset>
               <legend>Biểu tượng</legend>

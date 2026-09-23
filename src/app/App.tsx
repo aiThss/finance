@@ -1,19 +1,18 @@
+import { MobileHeader } from "./MobileHeader";
+import { BottomNavigation } from "./BottomNavigation";
+import { AppRouter } from "./AppRouter";
 import {
   Component,
-  lazy,
-  Suspense,
   useEffect,
   useState,
-  useRef,
+  useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
 import {
   BrowserRouter,
   NavLink,
-  Route,
-  Routes,
   Link,
-  useLocation,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
@@ -21,37 +20,19 @@ import {
   House,
   ArrowLeftRight,
   Plus,
-  ChartNoAxesCombined,
   Ellipsis,
   Wallet,
-  Tags,
-  CalendarDays,
   Settings,
-  Sparkles,
-  Trash2,
-  ChevronRight,
   WifiOff,
   BookOpen,
 } from "lucide-react";
-import { useRegisterSW } from "virtual:pwa-register/react";
-import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
-import { useFinance } from "../db/repositories";
+import PwaUpdateManager from "./PwaUpdateManager";
+import { FinanceScope, PrivacyProvider } from "../db/queries";
+import { Capacitor } from "@capacitor/core";
+import { NativeSystemBars } from "./NativeSystemBars";
 import { initialize } from "../db/seed";
 import { AppContext, type Draft } from "./context";
 import { TransactionSheet } from "../features/transactions/TransactionSheet";
-import Dashboard from "../features/dashboard/Dashboard";
-import { PageTitle } from "../components/ui/Common";
-const Transactions = lazy(
-  () => import("../features/transactions/Transactions"),
-);
-const Accounts = lazy(() => import("../features/accounts/Accounts"));
-const Categories = lazy(() => import("../features/accounts/Categories"));
-const Budgets = lazy(() => import("../features/budgets/Budgets"));
-const Recurring = lazy(() => import("../features/recurring/Recurring"));
-const Reports = lazy(() => import("../features/reports/Reports"));
-const AI = lazy(() => import("../features/ai/AI"));
-const SettingsPage = lazy(() => import("../features/settings/Settings"));
-const Trash = lazy(() => import("../features/settings/Trash"));
 export class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -75,130 +56,8 @@ export class ErrorBoundary extends Component<
     );
   }
 }
-function More() {
-  const entries = [
-    [
-      "/budgets",
-      "Ngân sách",
-      "Đặt giới hạn chi tiêu mỗi tháng",
-      ChartNoAxesCombined,
-    ],
-    ["/settings", "Cài đặt", "Giao diện, sao lưu và quyền riêng tư", Settings],
-    [
-      "/reports",
-      "Báo cáo",
-      "Một bức tranh rõ hơn về thu chi",
-      ChartNoAxesCombined,
-    ],
-    ["/recurring", "Thu chi định kỳ", "Những khoản quen thuộc", CalendarDays],
-    ["/categories", "Danh mục", "Sắp xếp theo cách của bạn", Tags],
-    ["/ai", "Trợ lý AI", "Nhập bằng lời, đọc hóa đơn", Sparkles],
-    ["/trash", "Thùng rác", "Khôi phục giao dịch đã xóa", Trash2],
-  ] as const;
-  return (
-    <>
-      <PageTitle
-        title="Góc của bạn"
-        description="Mọi thứ để chiếc túi gọn gàng hơn."
-      />
-      {entries.slice(0, 3).map(([to, title, description, Icon]) => (
-        <Link className="more-row" key={to} to={to}>
-          <span className="category-icon">
-            <Icon size={21} />
-          </span>
-          <span>
-            <strong>{title}</strong>
-            <small>{description}</small>
-          </span>
-          <ChevronRight size={18} />
-        </Link>
-      ))}
-      <details className="extra-tools">
-        <summary>Công cụ khác</summary>
-        {entries.slice(3).map(([to, title, description, Icon]) => (
-          <Link className="more-row" key={to} to={to}>
-            <span className="category-icon">
-              <Icon size={21} />
-            </span>
-            <span>
-              <strong>{title}</strong>
-              <small>{description}</small>
-            </span>
-            <ChevronRight size={18} />
-          </Link>
-        ))}
-      </details>
-      <p className="local-note">
-        Túi Nhỏ · Một chút ghi chép, nhẹ lòng mỗi ngày.
-      </p>
-    </>
-  );
-}
-function PageTransition() {
-  const location = useLocation();
-  const [displayed, setDisplayed] = useState(location);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (displayed.pathname === location.pathname) return;
-    const node = ref.current!;
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let cancelled = false;
-    const exit = node.animate(
-      [
-        { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0, transform: "translateY(-6px)" },
-      ],
-      { duration: reduced ? 0 : 90, easing: "ease-in", fill: "forwards" },
-    );
-    void exit.finished
-      .then(() => {
-        if (cancelled) return;
-        window.scrollTo(0, 0);
-        setDisplayed(location);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      exit.cancel();
-    };
-  }, [location, displayed.pathname]);
-  return (
-    <div
-      ref={ref}
-      className="page-transition"
-      inert={displayed.pathname !== location.pathname}
-    >
-      <div key={displayed.pathname} className="page-enter">
-        <Suspense fallback={<p role="status">Đang mở…</p>}>
-          <Routes location={displayed}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/budgets" element={<Budgets />} />
-            <Route path="/recurring" element={<Recurring />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/ai" element={<AI />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/trash" element={<Trash />} />
-            <Route path="/more" element={<More />} />
-            <Route
-              path="*"
-              element={
-                <>
-                  <PageTitle title="Không tìm thấy trang" />
-                  <Link to="/">Về tổng quan</Link>
-                </>
-              }
-            />
-          </Routes>
-        </Suspense>
-      </div>
-    </div>
-  );
-}
 function Shell() {
-  const data = useFinance();
+  const [ready, setReady] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [initError, setInitError] = useState("");
   const [toast, setToast] = useState<{
@@ -209,16 +68,14 @@ function Shell() {
   const [offline, setOffline] = useState(!navigator.onLine);
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW();
   useEffect(() => {
-    void initialize().catch(() =>
-      setInitError(
-        "Không thể mở bộ nhớ cục bộ. Kiểm tra quyền lưu trữ của trình duyệt.",
-      ),
-    );
+    void initialize()
+      .then(() => setReady(true))
+      .catch(() =>
+        setInitError(
+          "Không thể mở bộ nhớ cục bộ. Kiểm tra quyền lưu trữ của trình duyệt.",
+        ),
+      );
   }, []);
   useEffect(() => {
     const online = () => setOffline(!navigator.onLine);
@@ -230,38 +87,16 @@ function Shell() {
     };
   }, []);
   useEffect(() => {
-    if (!data) return;
-    const theme = data.settings.theme;
-    const query = matchMedia("(prefers-color-scheme: dark)");
-    const apply = () => {
-      const resolved =
-        theme === "system" ? (query.matches ? "dark" : "light") : theme;
-      document.documentElement.dataset.theme = resolved;
-      if (Capacitor.isNativePlatform())
-        void SystemBars.setStyle({
-          style:
-            resolved === "dark" ? SystemBarsStyle.Dark : SystemBarsStyle.Light,
-        }).catch(() =>
-          setToast({
-            text: "Không đổi được màu thanh hệ thống trên thiết bị này.",
-          }),
-        );
-    };
-    apply();
-    query.addEventListener("change", apply);
-    return () => query.removeEventListener("change", apply);
-  }, [data?.settings.theme]);
-  useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(null), toast.action ? 12000 : 5000);
     return () => clearTimeout(id);
   }, [toast]);
   useEffect(() => {
-    if (data && params.has("add")) {
+    if (ready && params.has("add")) {
       setDraft({ type: params.get("add") === "income" ? "income" : "expense" });
       setParams({}, { replace: true });
     }
-  }, [data, params, setParams]);
+  }, [ready, params, setParams]);
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
     let cleanup: (() => void) | undefined;
@@ -280,19 +115,26 @@ function Shell() {
       cleanup?.();
     };
   }, [navigate]);
+  const notify = useCallback(
+    (text: string, action?: () => void, label?: string) =>
+      setToast({ text, action, label }),
+    [],
+  );
+  const openTransaction = useCallback((d: Draft = {}) => setDraft(d), []);
+  const actions = useMemo(
+    () => ({ notify, openTransaction }),
+    [notify, openTransaction],
+  );
   if (initError) throw new Error(initError);
-  if (!data)
+  if (!ready)
     return (
       <main className="fatal" role="status">
         Đang mở chiếc túi của bạn…
       </main>
     );
-  const notify = (text: string, action?: () => void, label?: string) =>
-    setToast({ text, action, label });
   return (
-    <AppContext.Provider
-      value={{ data, openTransaction: (d = {}) => setDraft(d), notify }}
-    >
+    <AppContext.Provider value={actions}>
+      <NativeSystemBars />
       <a className="skip-link" href="#main">
         Đến nội dung chính
       </a>
@@ -326,16 +168,7 @@ function Shell() {
           <Settings size={19} /> Cài đặt
         </Link>
       </aside>
-      <div className="mobile-top">
-        <Link to="/" className="brand">
-          <BookOpen size={21} />
-          Túi Nhỏ
-        </Link>
-        <span className="local-status">
-          <span />
-          Lưu trên thiết bị
-        </span>
-      </div>
+      <MobileHeader />
       <main id="main" className="main-content">
         {offline && (
           <div className="offline-banner">
@@ -343,36 +176,9 @@ function Shell() {
             Đang ngoại tuyến · Thu chi vẫn hoạt động
           </div>
         )}
-        <PageTransition />
+        <AppRouter />
       </main>
-      <nav className="bottom-nav" aria-label="Điều hướng chính">
-        <NavLink to="/" end>
-          <House size={21} />
-          <span>Tổng quan</span>
-        </NavLink>
-        <NavLink to="/transactions">
-          <ArrowLeftRight size={21} />
-          <span>Giao dịch</span>
-        </NavLink>
-        <button
-          className="add-nav"
-          aria-label="Thêm giao dịch"
-          onClick={() => setDraft({})}
-        >
-          <span>
-            <Plus size={25} />
-          </span>
-          <small>Ghi chép</small>
-        </button>
-        <NavLink to="/accounts">
-          <Wallet size={21} />
-          <span>Ví tiền</span>
-        </NavLink>
-        <NavLink to="/more">
-          <Ellipsis size={22} />
-          <span>Khác</span>
-        </NavLink>
-      </nav>
+      <BottomNavigation onAdd={openTransaction} />
       {toast && (
         <div className="toast" role="status">
           <span>{toast.text}</span>
@@ -391,17 +197,16 @@ function Shell() {
           </button>
         </div>
       )}
-      {needRefresh && !draft && (
-        <div className="update-prompt">
-          <p>Có phiên bản Túi Nhỏ mới.</p>
-          <button onClick={() => void updateServiceWorker(true)}>
-            Cập nhật
-          </button>
-          <button onClick={() => setNeedRefresh(false)}>Để sau</button>
-        </div>
+      {!Capacitor.isNativePlatform() && (
+        <PwaUpdateManager sheetOpen={!!draft} />
       )}
       {draft && (
-        <TransactionSheet draft={draft} onClose={() => setDraft(null)} />
+        <FinanceScope
+          tables={["accounts", "categories", "transactions", "settings"]}
+          recentLimit={100}
+        >
+          <TransactionSheet draft={draft} onClose={() => setDraft(null)} />
+        </FinanceScope>
       )}
     </AppContext.Provider>
   );
@@ -409,9 +214,11 @@ function Shell() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Shell />
-      </BrowserRouter>
+      <PrivacyProvider>
+        <BrowserRouter>
+          <Shell />
+        </BrowserRouter>
+      </PrivacyProvider>
     </ErrorBoundary>
   );
 }

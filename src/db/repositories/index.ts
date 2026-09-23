@@ -1,4 +1,3 @@
-import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../schema";
 import {
   accountSchema,
@@ -60,7 +59,7 @@ async function saveTransaction(input: Transaction, updating: boolean) {
       });
       if (t.type === "expense") {
         const p = await db.preferences.get("settings");
-        if (p)
+        if (p && p.value.lastAccountId !== t.accountId)
           await db.preferences.put({
             id: "settings",
             value: { ...p.value, lastAccountId: t.accountId },
@@ -205,8 +204,5 @@ export async function snapshot() {
     recurring,
     settings: p?.value ?? settingsSchema.parse({}),
   };
-}
-export function useFinance() {
-  return useLiveQuery(snapshot, []);
 }
 export type FinanceData = Awaited<ReturnType<typeof snapshot>>;

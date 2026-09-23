@@ -1,6 +1,6 @@
 import { Wallet, Plus } from "lucide-react";
 import type { ReactNode } from "react";
-import { useApp } from "../../app/context";
+import { usePrivacy } from "../../db/queries";
 import { money } from "../../domain/money";
 export function Money({
   value,
@@ -11,10 +11,10 @@ export function Money({
   className?: string;
   sign?: boolean;
 }) {
-  const { data } = useApp();
+  const privacy = usePrivacy();
   return (
     <span className={`money ${className}`}>
-      {data.settings.privacy
+      {privacy
         ? "••••••"
         : `${sign && value > 0 ? "+" : ""}${money(value)}`}
     </span>

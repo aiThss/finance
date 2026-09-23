@@ -6,6 +6,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "prompt",
+      injectRegister: false,
       includeAssets: ["icon.svg"],
       manifest: {
         name: "Túi Nhỏ — Tài chính cá nhân",

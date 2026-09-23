@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useMemo, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
@@ -71,29 +72,32 @@ export default function Transactions() {
       <div className="filters">
         <label>
           Loại
-          <select value={type} onChange={(e) => setType(e.target.value)}>
+          <SelectField value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">Tất cả loại</option>
             {Object.entries(vi.types).map(([key, value]) => (
               <option key={key} value={key}>
                 {value}
               </option>
             ))}
-          </select>
+          </SelectField>
         </label>
         <label>
           Tài khoản
-          <select value={account} onChange={(e) => setAccount(e.target.value)}>
+          <SelectField
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+          >
             <option value="">Tất cả ví</option>
             {data.accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
               </option>
             ))}
-          </select>
+          </SelectField>
         </label>
         <label>
           Danh mục
-          <select
+          <SelectField
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -103,7 +107,7 @@ export default function Transactions() {
                 {c.name}
               </option>
             ))}
-          </select>
+          </SelectField>
         </label>
       </div>
       <details className="date-filter">

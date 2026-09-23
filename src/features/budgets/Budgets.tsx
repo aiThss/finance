@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useState } from "react";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -185,7 +186,7 @@ export default function Budgets() {
             </label>
             <label>
               Danh mục
-              <select
+              <SelectField
                 value={edit.categoryId ?? ""}
                 onChange={(e) =>
                   setEdit({ ...edit, categoryId: e.target.value || undefined })
@@ -199,7 +200,7 @@ export default function Budgets() {
                       {c.name}
                     </option>
                   ))}
-              </select>
+              </SelectField>
             </label>
             <label>
               Bắt đầu từ tháng

@@ -1,6 +1,6 @@
 {
   "name": "tui-nho-finance",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,10 @@
     "android:sync": "npm run build && cap sync android",
     "android:open": "cap open android",
     "android:build": "npm run android:sync && node scripts/android-build.mjs",
-    "verify:build": "node scripts/verify-build.mjs"
+    "verify:build": "node scripts/verify-build.mjs",
+    "verify:version": "node scripts/verify-version.mjs",
+    "validate:android-release": "node scripts/validate-android-release.mjs",
+    "build:android:release": "npm run validate:android-release && npm run verify:version && npm run build"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
@@ -64,5 +67,6 @@
     "xcode": {
       "uuid": "^11.1.1"
     }
-  }
+  },
+  "androidVersionCode": 3
 }

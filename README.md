@@ -75,25 +75,15 @@ Danh sách giao dịch chia trang 60 mục để giới hạn số hàng DOM; b�
 
 ## Gemini và quyền riêng tư
 
-Thiết lập phía **server**:
+**Người dùng tự nhập key:** mở Cài đặt → Trợ lý AI → Cách lấy API key. Vào [Google AI Studio](https://aistudio.google.com/api-keys), chọn Create API key, sao chép key và dán vào ứng dụng. Bấm Lưu API key rồi Kiểm tra key Gemini. Không chia sẻ key; quản lý quota/chi phí và thu hồi key bị lộ tại AI Studio.
 
-```dotenv
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-3.8-flash
-ALLOWED_ORIGINS=https://finance.example.com
-AI_ACCESS_TOKEN=
-PORT=3000
-```
+Android lưu key mã hóa AES-GCM bằng Android Keystore trong vùng riêng của app; không xuất key ra JavaScript sau khi lưu, không đưa vào JSON backup, không có key trong APK. Bridge tắt logging để tránh ghi nội dung key lúc nhập. Yêu cầu HTTPS đi thẳng đến endpoint cố định của Google; không chuyển tiếp key qua backend và không dùng key trong URL. Xóa key trong Cài đặt chỉ xóa trên máy; muốn thu hồi hoàn toàn thì xóa tại AI Studio. Web giữ key cá nhân trong bộ nhớ tab, cần nhập lại khi reload. Thiết bị hoặc trang web bị xâm nhập vẫn có thể sử dụng key; mã hóa lưu trữ không thay thế bảo vệ thiết bị.
 
-Điền key vào biến môi trường thật của máy chủ/Dokploy, không commit. `AI_ACCESS_TOKEN` là mã truy cập tùy chọn bảo vệ quota proxy công khai; nên đặt chuỗi ngẫu nhiên dài, nhập ở Cài đặt ứng dụng (chỉ lưu sessionStorage). Đây không phải Gemini API key. Web same-origin để `VITE_API_BASE_URL` trống. Android đặt `VITE_API_BASE_URL=https://finance.example.com` **khi build**, và thêm `https://localhost` vào danh sách origins server. Frontend chỉ chứa URL công khai, không chứa key.
+Dùng Gemini 3.8 Flash Interactions API với `store: false`. Người dùng xác nhận trước khi gửi nội dung/ảnh hoặc số liệu tổng hợp; ảnh tối đa 4 MB. Kết quả phải qua schema và màn hình duyệt trước khi lưu giao dịch. Chính sách dữ liệu/quota của Google vẫn áp dụng. Kiểm thử dùng key giả và phản hồi mock; cần key của người dùng để kiểm chứng một yêu cầu AI thành công.
 
-Proxy sử dụng SDK `@google/genai`, Interactions API, `store: false`, thinking thấp cho trích xuất và vừa cho diễn giải. JSON theo schema và kiểm tra Zod cả hai phía; backend không truy cập DB trên thiết bị. Consent trước lần gửi đầu; chọn ảnh chưa gửi lên cho đến khi bấm gửi. AI có thể sai: mọi bản nháp phải qua form duyệt.
+Proxy Express cũ vẫn dành cho triển khai web có key phía server (`GEMINI_API_KEY`, `GEMINI_MODEL`, `ALLOWED_ORIGINS`). Không có key cá nhân thì web dùng proxy; Android luôn dùng key cá nhân. `VITE_API_BASE_URL` chỉ là URL proxy tùy chọn, không cần cho APK. Không đặt key vào biến `VITE_*` hoặc commit credential.
 
-Giới hạn: ảnh 4 MB ở UI, body 6 MB ở server, 10 yêu cầu/phút/IP, 120 yêu cầu/giờ/toàn tiến trình, timeout 25 giây. Không log ảnh hay payload. CORS chỉ cho origin được cấu hình; CORS không thay thế mã truy cập. Rate limiter in-memory dành cho **một replica**. Khi scale, thay store bằng Redis dùng chung và đặt quota nhà cung cấp. `TRUST_PROXY` mặc định chỉ tin mạng nội bộ/loopback của reverse proxy; không public port container và không đặt `trust proxy=true` tùy tiện.
-
-Không có credential trong repo nên kiểm thử AI tự động dùng mock. Sau khi cấu hình key thật, kiểm tra ba endpoint với một ví dụ không nhạy cảm trước khi dùng dữ liệu thật. Chính sách xử lý dữ liệu của Google vẫn áp dụng dù tắt lưu lịch sử Interactions.
-
-Tham khảo chính thức: [Interactions](https://ai.google.dev/gemini-api/docs/interactions-overview), [structured output](https://ai.google.dev/gemini-api/docs/structured-output).
+Tham khảo chính thức: [tạo và bảo vệ API key](https://ai.google.dev/gemini-api/docs/api-key), [Interactions](https://ai.google.dev/gemini-api/docs/interactions-overview), [Android Keystore](https://developer.android.com/privacy-and-security/keystore).
 
 ## PWA / offline
 
@@ -111,22 +101,22 @@ DB bắt đầu với Dexie version 1; version 2 thêm migration metadata order/
 
 ## Android
 
-Project đã có Capacitor Android 8; app ID `com.aithss.finance` (đổi trước khi phát hành nếu cần). UI lấy trực tiếp từ `dist/`.
+Project đã có Capacitor Android 8; giữ app ID `com.aithss.finance` để nâng cấp ứng dụng hiện có. UI lấy trực tiếp từ `dist/`.
 
 1. Cài Android Studio, Android SDK theo `android/variables.gradle` và JDK 21. Thiết lập `JAVA_HOME`, `ANDROID_HOME` hoặc `android/local.properties` với `sdk.dir` (không commit đường dẫn cá nhân).
-2. Nếu dùng AI, đặt URL HTTPS backend lúc build. PowerShell: `$env:VITE_API_BASE_URL='https://finance.example.com'`; bash: `export VITE_API_BASE_URL=https://finance.example.com`.
+2. APK không cần backend riêng. Người dùng mở Cài đặt → Trợ lý AI để nhập key cá nhân từ Google AI Studio.
 3. `npm run android:sync` để build web và copy sang Android.
 4. `npm run android:open` để mở Android Studio hoặc `npm run android:build` để tạo debug APK.
 5. Debug APK ở `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-Release: chọn Build → Generate Signed App Bundle / APK trong Android Studio, tạo keystore riêng, tăng `versionCode`/`versionName` trong `android/app/build.gradle`; build bản release đã ký. Không commit keystore/password. CLI tương đương `cd android && ./gradlew bundleRelease` sau khi cấu hình signing. Bản unsigned không đủ để phát hành. Web không phụ thuộc Android SDK.
+Release: dùng khóa ký release hiện có, không tạo khóa thay thế. APK dùng Gemini API key do người dùng tự nhập trong Cài đặt; không cần `VITE_API_BASE_URL`. Chạy `npm run build:android:release` và `npx cap sync android`. Nếu vẫn cấu hình backend tùy chọn, gate kiểm tra health/CORS trước khi build. Khi phát hành phiên bản mới, đồng bộ version trong package.json/package-lock.json, `androidVersionCode` trong package.json và versionCode/versionName trong Gradle; `npm run verify:version` kiểm tra chúng. Không commit keystore/password. Bản unsigned hoặc ký debug không đủ để phát hành.
 
 Safe-area CSS, resize khi bàn phím mở, Android back đóng sheet và hỏi khi chưa lưu. Cần smoke-test trên thiết bị Android thật trước phát hành store: bàn phím, back, native share, splash/status bar, cập nhật và dữ liệu offline. Xem [tài liệu Capacitor Android](https://capacitorjs.com/docs/android).
 
 ### Cập nhật APK khi sửa vùng thanh trạng thái
 Bản sửa 23/09 dùng SystemBars của Capacitor để chừa vùng status bar, camera cutout và bàn phím trên Android; bỏ plugin StatusBar cũ và `resizeOnFullScreen`. Cần **build và cài APK mới**, redeploy Dokploy chỉ cập nhật web. Dùng cùng applicationId và khóa ký để nâng cấp tại chỗ; không gỡ app đang chứa dữ liệu.
 
-GitHub Actions `Verify` có job `android-build` tạo artifact `tui-nho-debug-apk` để kiểm tra biên dịch. Đây là bản debug, không thay thế APK release ký bằng khóa hiện tại. Khi phát hành, tăng versionCode và dùng quy trình ký release ở trên. Xác minh trên điện thoại: mở lạnh, mọi tab, xoay ngang, mở bàn phím, Back và đóng form; kiểm tra cả điều hướng cử chỉ và 3 nút.
+GitHub Actions `Verify` có job `android-build` tạo artifact `tui-nho-debug-apk`, cài/mở APK trên emulator API 35 và lưu ảnh/diagnostics. Đây là bản debug, không thay thế APK release ký bằng khóa hiện tại. Xác minh trên điện thoại: mở lạnh, mọi tab, xoay ngang, mở bàn phím, Back và đóng form; kiểm tra cả điều hướng cử chỉ và 3 nút. Xem [báo cáo kiểm thử và các điều kiện còn thiếu](docs/stabilization.md).
 
 ### Phát hành APK tự động
-Tăng version trong package.json/package-lock.json, tăng versionCode và versionName trong android/app/build.gradle, thêm docs/releases/vX.Y.Z.md rồi push tag vX.Y.Z. Workflow Android Release build cấu hình release, ký bằng hai GitHub Secrets ANDROID_RELEASE_KEYSTORE_BASE64 / ANDROID_RELEASE_KEYSTORE_PASSWORD và xuất APK cùng SHA-256 lên GitHub Releases. Không thay thế binary của phiên bản đã phát hành. Badge luôn mở releases/latest.
+Chỉ sau khi các điều kiện nghiệm thu đạt: tăng version trong package.json/package-lock.json, đồng bộ androidVersionCode và versionCode/versionName trong android/app/build.gradle, thêm docs/releases/vX.Y.Z.md rồi push tag vX.Y.Z. Repository variable `VITE_API_BASE_URL` là tùy chọn. Workflow Android Release kiểm tra backend, build, ký bằng hai GitHub Secrets ANDROID_RELEASE_KEYSTORE_BASE64 / ANDROID_RELEASE_KEYSTORE_PASSWORD, chạy native smoke trên APK đã ký rồi xuất APK cùng SHA-256 lên GitHub Releases. Không thay thế binary của phiên bản đã phát hành. Badge luôn mở releases/latest.

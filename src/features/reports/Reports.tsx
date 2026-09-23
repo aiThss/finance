@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useState } from "react";
 import {
   addMonths,
@@ -71,14 +72,14 @@ export default function Reports() {
       />
       <label>
         Thời gian
-        <select value={preset} onChange={(e) => setPreset(e.target.value)}>
+        <SelectField value={preset} onChange={(e) => setPreset(e.target.value)}>
           <option value="this">Tháng này</option>
           <option value="last">Tháng trước</option>
           <option value="three">3 tháng</option>
           <option value="six">6 tháng</option>
           <option value="year">Năm nay</option>
           <option value="custom">Tùy chọn</option>
-        </select>
+        </SelectField>
       </label>
       {preset === "custom" && (
         <div className="form-grid">
@@ -235,7 +236,7 @@ export default function Reports() {
             <h2>Lịch sử số dư</h2>
             <label>
               Tài khoản trong lịch sử
-              <select
+              <SelectField
                 value={historyAccount}
                 onChange={(e) => setHistoryAccount(e.target.value)}
               >
@@ -245,7 +246,7 @@ export default function Reports() {
                     {a.name}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </label>
             <p className="muted">
               Số dư ban đầu được coi là có trước giao dịch đầu tiên; gồm tài

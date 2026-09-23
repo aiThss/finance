@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -214,24 +215,24 @@ export function TransactionSheet({
           <div className="form-grid">
             <label>
               {type === "transfer" ? "Từ tài khoản" : "Tài khoản"}
-              <select {...register("accountId")} required>
+              <SelectField {...register("accountId")} required>
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </label>
             {type === "transfer" && (
               <label>
                 Đến tài khoản
-                <select {...register("toAccountId")} required>
+                <SelectField {...register("toAccountId")} required>
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
             )}
           </div>

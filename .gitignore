@@ -6,6 +6,7 @@ dist/
 *.log
 test-results/
 playwright-report/
+artifacts/
 android/.gradle/
 android/local.properties
 android/**/build/

@@ -15,14 +15,10 @@ for (const file of await files("dist")) {
   if (!/\.(?:html|css|js|json|webmanifest)$/.test(file)) continue;
   const text = await readFile(file, "utf8");
   if (
-    /VITE_GEMINI_API_KEY|AIza[\w-]{30,}|generativelanguage\.googleapis\.com/.test(
-      text,
-    ) ||
+    /VITE_GEMINI_API_KEY|AIza[\w-]{30,}/.test(text) ||
     (secret && text.includes(secret))
   )
-    throw new Error(
-      `Unexpected credential or direct Gemini API reference in ${file}`,
-    );
+    throw new Error(`Unexpected embedded credential in ${file}`);
 }
 const lock = JSON.parse(await readFile("package-lock.json", "utf8"));
 for (const key of Object.keys(lock.packages))

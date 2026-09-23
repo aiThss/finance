@@ -2,12 +2,33 @@ package com.aithss.finance;
 
 import com.getcapacitor.BridgeActivity;
 import android.os.Bundle;
+import android.content.res.Configuration;
 import androidx.activity.EdgeToEdge;
 
 public class MainActivity extends BridgeActivity {
+    private int windowBackgroundColor = 0xff111513;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
+        registerPlugin(WindowAppearancePlugin.class);
+        registerPlugin(LocalGeminiPlugin.class);
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        windowBackgroundColor = getPreferences(MODE_PRIVATE).getInt("windowBackground", windowBackgroundColor);
+        getWindow().getDecorView().setBackgroundColor(windowBackgroundColor);
+    }
+
+    // SystemBars owns all insets. Older WebViews expose the native window in
+    // those areas, so its background must follow the app's explicit theme.
+    public void setWindowBackground(int color) {
+        windowBackgroundColor = color;
+        getPreferences(MODE_PRIVATE).edit().putInt("windowBackground", color).apply();
+        getWindow().getDecorView().setBackgroundColor(color);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        getWindow().getDecorView().setBackgroundColor(windowBackgroundColor);
     }
 }

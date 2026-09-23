@@ -1,7 +1,8 @@
+import { useTransactionsForRange, useBudgets } from "../../db/queries";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, ImagePlus, Send, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-import { subMonths } from "date-fns";
+import { subMonths, addMonths, startOfMonth } from "date-fns";
 import { useApp } from "../../app/context";
 import {
   PageTitle,
@@ -19,8 +20,19 @@ import {
   reportService,
 } from "../../domain/money";
 export default function AI() {
-  const { data, openTransaction } = useApp();
+  const { data: baseData, openTransaction } = useApp();
   const [mode, setMode] = useState<"entry" | "insights">("entry");
+  const transactions = useTransactionsForRange(
+    startOfMonth(subMonths(new Date(), 1)).toISOString(),
+    startOfMonth(addMonths(new Date(), 1)).toISOString(),
+    mode === "insights",
+  );
+  const budgets = useBudgets(mode === "insights");
+  const data = {
+    ...baseData,
+    transactions: transactions ?? [],
+    budgets: budgets ?? [],
+  };
   const [text, setText] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
@@ -243,6 +255,7 @@ export default function AI() {
               className="primary"
               disabled={
                 busy ||
+                (mode === "insights" && (!transactions || !budgets)) ||
                 !consent ||
                 (!text.trim() && !(mode === "entry" && image))
               }

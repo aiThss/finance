@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowDownLeft,
@@ -12,6 +13,7 @@ import { vi as dateVi } from "date-fns/locale";
 import { useApp } from "../../app/context";
 import {
   balanceService,
+  activeAccounts,
   monthKey,
   reportService,
   active,
@@ -24,14 +26,25 @@ export default function Dashboard() {
   const { data, openTransaction, notify } = useApp();
   const navigate = useNavigate();
   const month = monthKey(new Date());
-  const totals = reportService.getMonthlySummary(data.transactions, month);
-  const previous = reportService.getMonthlySummary(
-    data.transactions,
-    monthKey(subMonths(new Date(), 1)),
-  );
-  const recent = active(data.transactions)
-    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-    .slice(0, 5);
+  const { totals, previous, recent, totalBalance } = useMemo(() => {
+    const totals = reportService.getMonthlySummary(data.transactions, month);
+    const previous = reportService.getMonthlySummary(
+      data.transactions,
+      monthKey(subMonths(new Date(), 1)),
+    );
+    const recent = active(data.transactions)
+      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+      .slice(0, 5);
+    return {
+      totals,
+      previous,
+      recent,
+      totalBalance: balanceService.getTotalBalance(
+        activeAccounts(data.accounts),
+        data.transactions,
+      ),
+    };
+  }, [data.transactions, data.accounts, month]);
   const due = data.recurring.filter(
     (r) => r.enabled && r.nextDate <= dayKey(new Date()),
   );
@@ -61,15 +74,11 @@ export default function Dashboard() {
             {data.settings.privacy ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
-        <Money
-          value={balanceService.getTotalBalance(
-            data.accounts,
-            data.transactions,
-          )}
-          className="hero-amount"
-        />
+        <Money value={totalBalance} className="hero-amount" />
         <div className="balance-foot">
-          <span>{data.accounts.length} tài khoản</span>
+          <span>
+            {activeAccounts(data.accounts).length} tài khoản đang dùng
+          </span>
           <Link to="/accounts" aria-label="Xem tài khoản">
             <ArrowUpRight size={22} />
           </Link>

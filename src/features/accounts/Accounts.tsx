@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { SelectField } from "../../components/ui/SelectField";
+import { useMemo, useState } from "react";
 import { Plus, ArrowUp, Archive, Wallet } from "lucide-react";
 import { useApp } from "../../app/context";
-import { balanceService, parseMoney } from "../../domain/money";
+import { accountBalances, sum, parseMoney } from "../../domain/money";
 import { accountRepository, now, uid } from "../../db/repositories";
 import type { Account } from "../../domain/schema";
 import {
@@ -17,6 +18,10 @@ export default function Accounts() {
   const { data, notify } = useApp();
   const [edit, setEdit] = useState<Partial<Account> | null>(null);
   const [archived, setArchived] = useState(false);
+  const balances = useMemo(
+    () => accountBalances(data.accounts, data.transactions),
+    [data.accounts, data.transactions],
+  );
   const items = data.accounts.filter((a) => a.archived === archived);
   async function move(id: string) {
     try {
@@ -46,13 +51,8 @@ export default function Accounts() {
         }
       />
       <div className="total-line">
-        <span>Tổng số dư · gồm lưu trữ</span>
-        <Money
-          value={balanceService.getTotalBalance(
-            data.accounts,
-            data.transactions,
-          )}
-        />
+        <span>{archived ? "Số dư đã lưu trữ" : "Tổng số dư đang dùng"}</span>
+        <Money value={sum(items.map((a) => balances.get(a.id)!))} />
       </div>
       <div className="segmented">
         <button
@@ -88,9 +88,7 @@ export default function Accounts() {
               <strong>{a.name}</strong>
               <small>{vi.accountTypes[a.type]}</small>
             </span>
-            <Money
-              value={balanceService.getAccountBalance(a, data.transactions)}
-            />
+            <Money value={balances.get(a.id)!} />
           </button>
           <div className="account-actions">
             <button disabled={i === 0} onClick={() => void move(a.id)}>
@@ -178,7 +176,7 @@ function AccountForm({
         </label>
         <label>
           Loại tài khoản
-          <select
+          <SelectField
             value={type}
             onChange={(e) => setType(e.target.value as Account["type"])}
           >
@@ -187,7 +185,7 @@ function AccountForm({
                 {v}
               </option>
             ))}
-          </select>
+          </SelectField>
         </label>
         <label>
           Số dư ban đầu (VND)

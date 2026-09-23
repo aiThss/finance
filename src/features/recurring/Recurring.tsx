@@ -1,3 +1,4 @@
+import { SelectField } from "../../components/ui/SelectField";
 import { useState } from "react";
 import { Plus, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -157,7 +158,7 @@ export default function Recurring() {
               <div className="form-grid">
                 <label>
                   Loại
-                  <select
+                  <SelectField
                     value={edit.transactionTemplate.type}
                     onChange={(e) =>
                       setEdit({
@@ -172,7 +173,7 @@ export default function Recurring() {
                   >
                     <option value="expense">Chi tiêu</option>
                     <option value="income">Thu nhập</option>
-                  </select>
+                  </SelectField>
                 </label>
                 <label>
                   Số tiền (VND)
@@ -186,7 +187,7 @@ export default function Recurring() {
               </div>
               <label>
                 Tài khoản
-                <select
+                <SelectField
                   value={edit.transactionTemplate.accountId}
                   onChange={(e) =>
                     setEdit({
@@ -205,11 +206,11 @@ export default function Recurring() {
                         {a.name}
                       </option>
                     ))}
-                </select>
+                </SelectField>
               </label>
               <label>
                 Danh mục
-                <select
+                <SelectField
                   value={edit.transactionTemplate.categoryId ?? ""}
                   onChange={(e) =>
                     setEdit({
@@ -232,7 +233,7 @@ export default function Recurring() {
                         {c.name}
                       </option>
                     ))}
-                </select>
+                </SelectField>
               </label>
               <div className="form-grid">
                 <label>
@@ -249,7 +250,7 @@ export default function Recurring() {
                 </label>
                 <label>
                   Đơn vị
-                  <select
+                  <SelectField
                     value={edit.frequency}
                     onChange={(e) =>
                       setEdit({
@@ -263,7 +264,7 @@ export default function Recurring() {
                         {v}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
               </div>
               <label>
