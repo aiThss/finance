@@ -18,7 +18,17 @@ export function TransactionRows({ items }: { items: Transaction[] }) {
             className="transaction-row"
             onClick={() => openTransaction(t)}
           >
-            <span className={`category-icon ${t.type}`}>
+            <span
+              className={`category-icon jewel-badge ${t.type}`}
+              style={
+                {
+                  "--cat-color":
+                    t.type === "transfer"
+                      ? "var(--transfer)"
+                      : (category?.color ?? "var(--text-secondary)"),
+                } as React.CSSProperties
+              }
+            >
               <CategoryIcon
                 name={t.type === "transfer" ? "transfer" : category?.icon}
               />

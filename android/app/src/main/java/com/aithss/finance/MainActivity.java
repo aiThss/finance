@@ -6,7 +6,7 @@ import android.content.res.Configuration;
 import androidx.activity.EdgeToEdge;
 
 public class MainActivity extends BridgeActivity {
-    private int windowBackgroundColor = 0xff111513;
+    private int windowBackgroundColor = 0xff0a0e0c;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

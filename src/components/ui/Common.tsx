@@ -14,9 +14,7 @@ export function Money({
   const privacy = usePrivacy();
   return (
     <span className={`money ${className}`}>
-      {privacy
-        ? "••••••"
-        : `${sign && value > 0 ? "+" : ""}${money(value)}`}
+      {privacy ? "••••••" : `${sign && value > 0 ? "+" : ""}${money(value)}`}
     </span>
   );
 }

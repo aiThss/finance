@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import { migrateToV2 } from "./migrations/v2";
+import { migrateToV3 } from "./migrations/v3";
 import type {
   Account,
   Category,
@@ -27,6 +28,7 @@ export class FinanceDatabase extends Dexie {
       preferences: "id",
     });
     this.version(2).stores({}).upgrade(migrateToV2);
+    this.version(3).stores({}).upgrade(migrateToV3);
   }
 }
 export const db = new FinanceDatabase();

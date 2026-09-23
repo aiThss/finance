@@ -7,6 +7,7 @@ import type { Category } from "../../domain/schema";
 import { PageTitle, ErrorText, message } from "../../components/ui/Common";
 import { CategoryIcon, iconNames } from "../../components/ui/Icon";
 import { Sheet, dismissSheet } from "../../components/ui/Sheet";
+import { jewelColors } from "../../db/seed";
 export default function Categories() {
   const { data, notify } = useApp();
   const [edit, setEdit] = useState<Category | null>(null);
@@ -54,7 +55,10 @@ export default function Categories() {
                   key={c.id}
                   onClick={() => start(c)}
                 >
-                  <span className="category-icon" style={{ color: c.color }}>
+                  <span
+                    className="category-icon jewel-badge"
+                    style={{ "--cat-color": c.color } as React.CSSProperties}
+                  >
                     <CategoryIcon name={c.icon} />
                   </span>
                   <span>
@@ -138,14 +142,35 @@ export default function Categories() {
                 ))}
               </div>
             </fieldset>
-            <label>
-              Màu biểu tượng
-              <input
-                type="color"
-                value={edit.color}
-                onChange={(e) => setEdit({ ...edit, color: e.target.value })}
-              />
-            </label>
+            <fieldset>
+              <legend>Màu biểu tượng</legend>
+              <div className="swatch-picker">
+                {jewelColors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`swatch-btn ${edit.color.toLowerCase() === color.toLowerCase() ? "selected" : ""}`}
+                    style={{ backgroundColor: color }}
+                    aria-label={`Chọn màu ${color}`}
+                    onClick={() => {
+                      setEdit({ ...edit, color });
+                      setDirty(true);
+                    }}
+                  />
+                ))}
+              </div>
+              <label>
+                Màu tùy chỉnh
+                <input
+                  type="color"
+                  value={edit.color}
+                  onChange={(e) => {
+                    setEdit({ ...edit, color: e.target.value });
+                    setDirty(true);
+                  }}
+                />
+              </label>
+            </fieldset>
             <label className="checkbox">
               <input
                 type="checkbox"

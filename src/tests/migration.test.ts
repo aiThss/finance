@@ -4,17 +4,15 @@ import { FinanceDatabase } from "../db/schema";
 it("upgrades v1 metadata without changing financial history", async () => {
   const name = "migration-test";
   const old = new Dexie(name);
-  old
-    .version(1)
-    .stores({
-      accounts: "id,order",
-      categories: "id,type",
-      transactions:
-        "id,occurredAt,accountId,categoryId,recurringRuleId,recurringOccurrence",
-      budgets: "id,startMonth",
-      recurring: "id,nextDate",
-      preferences: "id",
-    });
+  old.version(1).stores({
+    accounts: "id,order",
+    categories: "id,type",
+    transactions:
+      "id,occurredAt,accountId,categoryId,recurringRuleId,recurringOccurrence",
+    budgets: "id,startMonth",
+    recurring: "id,nextDate",
+    preferences: "id",
+  });
   await old
     .table("accounts")
     .put({ id: "account", openingBalanceMinor: 45000 });

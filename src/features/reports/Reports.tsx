@@ -127,7 +127,7 @@ export default function Reports() {
             </div>
             <div>
               <span>Chi tiêu</span>
-              <Money value={totals.expense} />
+              <Money value={totals.expense} className="expense" />
             </div>
             <div>
               <span>Dòng tiền</span>
@@ -202,22 +202,44 @@ export default function Reports() {
             {!categories.length ? (
               <p className="muted">Chưa có chi tiêu trong kỳ này.</p>
             ) : (
-              categories.map((c) => (
-                <div className="category-report" key={c.key}>
-                  <div className="section-heading">
-                    <span>
-                      {data.categories.find((x) => x.id === c.key)?.name ??
-                        "Khác"}
-                    </span>
-                    <Money value={c.amount} />
+              categories.map((c) => {
+                const cat = data.categories.find((x) => x.id === c.key);
+                const percent = Math.round(
+                  (c.amount / (totals.expense || 1)) * 100,
+                );
+                const color = cat?.color ?? "#64748B";
+                return (
+                  <div className="category-report" key={c.key}>
+                    <div className="section-heading">
+                      <span>{cat?.name ?? "Khác"}</span>
+                      <Money value={c.amount} />
+                    </div>
+                    <div
+                      className="liquid-progress"
+                      role="progressbar"
+                      aria-valuenow={percent}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      style={
+                        {
+                          "--progress-color": color,
+                        } as React.CSSProperties
+                      }
+                    >
+                      <div
+                        className="liquid-progress-bar"
+                        style={
+                          {
+                            width: `${Math.min(percent, 100)}%`,
+                            "--progress-color": color,
+                          } as React.CSSProperties
+                        }
+                      />
+                    </div>
+                    <small>{percent}% tổng chi tiêu</small>
                   </div>
-                  <progress value={c.amount} max={totals.expense || 1} />
-                  <small>
-                    {Math.round((c.amount / (totals.expense || 1)) * 100)}% tổng
-                    chi tiêu
-                  </small>
-                </div>
-              ))
+                );
+              })
             )}
           </section>
           <section>

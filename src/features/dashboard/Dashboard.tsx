@@ -101,7 +101,7 @@ export default function Dashboard() {
           <span>
             <ArrowUpRight size={16} /> Chi tiêu
           </span>
-          <Money value={totals.expense} />
+          <Money value={totals.expense} className="expense" />
         </div>
         <div className="net-summary">
           <span>Dòng tiền ròng</span>

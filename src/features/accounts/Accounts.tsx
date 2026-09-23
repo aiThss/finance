@@ -1,7 +1,28 @@
 import { SelectField } from "../../components/ui/SelectField";
 import { useMemo, useState } from "react";
-import { Plus, ArrowUp, Archive, Wallet } from "lucide-react";
+import {
+  Plus,
+  ArrowUp,
+  Archive,
+  Banknote,
+  Building2,
+  Smartphone,
+  PiggyBank,
+  CreditCard,
+  Wallet,
+} from "lucide-react";
 import { useApp } from "../../app/context";
+
+const accountTypeConfig: Record<
+  Account["type"],
+  { icon: typeof Wallet; color: string }
+> = {
+  cash: { icon: Banknote, color: "#10B981" },
+  bank: { icon: Building2, color: "#3B82F6" },
+  ewallet: { icon: Smartphone, color: "#D946EF" },
+  savings: { icon: PiggyBank, color: "#F59E0B" },
+  credit: { icon: CreditCard, color: "#F43F5E" },
+};
 import { accountBalances, sum, parseMoney } from "../../domain/money";
 import { accountRepository, now, uid } from "../../db/repositories";
 import type { Account } from "../../domain/schema";
@@ -78,37 +99,47 @@ export default function Accounts() {
           onAction={() => setEdit({})}
         />
       )}
-      {items.map((a, i) => (
-        <article className="account-card" key={a.id}>
-          <button className="account-main" onClick={() => setEdit(a)}>
-            <span className="category-icon">
-              <Wallet size={21} />
-            </span>
-            <span>
-              <strong>{a.name}</strong>
-              <small>{vi.accountTypes[a.type]}</small>
-            </span>
-            <Money value={balances.get(a.id)!} />
-          </button>
-          <div className="account-actions">
-            <button disabled={i === 0} onClick={() => void move(a.id)}>
-              <ArrowUp size={15} />
-              Lên trên
+      {items.map((a, i) => {
+        const config = accountTypeConfig[a.type] ?? {
+          icon: Wallet,
+          color: "#64748B",
+        };
+        const AccountIcon = config.icon;
+        return (
+          <article className="account-card" key={a.id}>
+            <button className="account-main" onClick={() => setEdit(a)}>
+              <span
+                className="category-icon jewel-badge"
+                style={{ "--cat-color": config.color } as React.CSSProperties}
+              >
+                <AccountIcon size={21} />
+              </span>
+              <span>
+                <strong>{a.name}</strong>
+                <small>{vi.accountTypes[a.type]}</small>
+              </span>
+              <Money value={balances.get(a.id)!} />
             </button>
-            <button
-              onClick={() =>
-                void accountRepository
-                  .archive(a.id, !a.archived)
-                  .catch((e) => notify(message(e)))
-              }
-            >
-              <Archive size={15} />
-              {a.archived ? "Dùng lại" : "Lưu trữ"}
-            </button>
-            <button onClick={() => setEdit(a)}>Chỉnh sửa</button>
-          </div>
-        </article>
-      ))}
+            <div className="account-actions">
+              <button disabled={i === 0} onClick={() => void move(a.id)}>
+                <ArrowUp size={15} />
+                Lên trên
+              </button>
+              <button
+                onClick={() =>
+                  void accountRepository
+                    .archive(a.id, !a.archived)
+                    .catch((e) => notify(message(e)))
+                }
+              >
+                <Archive size={15} />
+                {a.archived ? "Dùng lại" : "Lưu trữ"}
+              </button>
+              <button onClick={() => setEdit(a)}>Chỉnh sửa</button>
+            </div>
+          </article>
+        );
+      })}
       {edit && <AccountForm initial={edit} onClose={() => setEdit(null)} />}
     </>
   );

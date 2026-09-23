@@ -101,6 +101,15 @@ export default function Budgets() {
       )}
       {items.map((b) => {
         const s = budgetStatus(b, data.transactions, month);
+        const category = data.categories.find((c) => c.id === b.categoryId);
+        const progressColor =
+          s.percent >= 100
+            ? "var(--danger)"
+            : s.percent >= 80
+              ? "var(--warning)"
+              : (category?.color ?? "var(--accent)");
+        const progressClass =
+          s.percent >= 100 ? "over" : s.percent >= 80 ? "near" : "";
         return (
           <button className="budget-card" key={b.id} onClick={() => start(b)}>
             <div className="section-heading">
@@ -122,13 +131,28 @@ export default function Budgets() {
                 / <Money value={b.amountMinor} />
               </span>
             </div>
-            <progress
-              value={Math.min(s.percent, 100)}
-              max={100}
-              className={
-                s.percent >= 100 ? "over" : s.percent >= 80 ? "near" : ""
+            <div
+              className="liquid-progress"
+              role="progressbar"
+              aria-valuenow={Math.round(s.percent)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              style={
+                {
+                  "--progress-color": progressColor,
+                } as React.CSSProperties
               }
-            />
+            >
+              <div
+                className={`liquid-progress-bar ${progressClass}`}
+                style={
+                  {
+                    width: `${Math.min(s.percent, 100)}%`,
+                    "--progress-color": progressColor,
+                  } as React.CSSProperties
+                }
+              />
+            </div>
             <div className="section-heading muted">
               <span>
                 {s.remaining >= 0 ? "Còn lại" : "Vượt"}{" "}

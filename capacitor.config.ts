@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   loggingBehavior: "none",
   server: { androidScheme: "https" },
   plugins: {
-    SplashScreen: { launchShowDuration: 400, backgroundColor: "#111513" },
+    SplashScreen: { launchShowDuration: 400, backgroundColor: "#0A0E0C" },
     Keyboard: { resize: "body" },
     SystemBars: {
       insetsHandling: "native",

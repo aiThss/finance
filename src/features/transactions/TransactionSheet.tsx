@@ -250,11 +250,25 @@ export function TransactionSheet({
                       type="button"
                       key={c.id}
                       aria-pressed={categoryId === c.id}
+                      style={
+                        {
+                          "--cat-color": c.color,
+                        } as React.CSSProperties
+                      }
                       onClick={() =>
                         setValue("categoryId", c.id, { shouldDirty: true })
                       }
                     >
-                      <CategoryIcon name={c.icon} />
+                      <span
+                        className="category-icon jewel-badge"
+                        style={
+                          {
+                            "--cat-color": c.color,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <CategoryIcon name={c.icon} />
+                      </span>
                       <span>{c.name}</span>
                     </button>
                   ))}

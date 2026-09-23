@@ -1,47 +1,73 @@
 :root {
-  --bg: #111513;
-  --surface-1: #191e1b;
-  --surface-2: #232a25;
-  --surface-elevated: #303931;
+  --bg: #0a0e0c;
+  --surface-1: #141a16;
+  --surface-2: #1b231d;
+  --surface-elevated: #242e27;
   --text-primary: #f0f1e9;
   --text-secondary: #a7b0a7;
   --text-muted: #859087;
-  --border: #2a332d;
-  --border-strong: #414c42;
-  --accent: #c2d9a9;
-  --on-accent: #24321d;
-  --income: #a4cdb5;
-  --expense: #d8b499;
-  --warning: #d6bd84;
-  --danger: #e4a39a;
-  --selected: #2b3729;
-  --nav-bg: #191e1b;
-  --balance-start: #2c372d;
-  --balance-end: #202823;
+  --border: #242e27;
+  --border-strong: #36443a;
+  --accent: #34d399;
+  --on-accent: #0a0e0c;
+  --income: #10b981;
+  --expense: #f43f5e;
+  --transfer: #06b6d4;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --selected: #1a3325;
+  --nav-bg: rgba(24, 32, 27, 0.84);
+  --balance-start: rgba(16, 185, 129, 0.15);
+  --balance-end: rgba(6, 182, 212, 0.06);
   --radius-sm: 10px;
   --radius-md: 14px;
-  --radius-lg: 16px;
+  --radius-lg: 18px;
   --shadow-card: 0 14px 40px #0004;
+
+  /* Optical Glass Tokens */
+  --glass-canvas-mesh:
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+  --glass-l1: rgba(20, 26, 22, 0.65);
+  --glass-l2: rgba(24, 32, 27, 0.84);
+  --glass-l3: rgba(14, 18, 15, 0.55);
+  --glass-sheet: rgba(20, 26, 22, 0.94);
+  --specular-top: rgba(255, 255, 255, 0.22);
+  --specular-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.45);
 }
 :root[data-theme="light"] {
-  --bg: #f7f8f3;
+  --bg: #f6f8f5;
   --surface-1: #ffffff;
-  --surface-2: #eff1e9;
-  --surface-elevated: #e4e9dc;
-  --text-primary: #233126;
-  --text-secondary: #5c695e;
-  --text-muted: #6e796e;
-  --border: #dce2d5;
-  --border-strong: #b7c3b0;
-  --accent: #486537;
-  --on-accent: #fff;
-  --income: #32734f;
-  --expense: #905b3b;
-  --warning: #8b651c;
-  --danger: #a63e37;
-  --selected: #e5eddc;
-  --nav-bg: #f7f8f3;
-  --balance-start: #e6eddf;
-  --balance-end: #f1f4eb;
+  --surface-2: #edf1ea;
+  --surface-elevated: #e1e7dc;
+  --text-primary: #19251c;
+  --text-secondary: #536255;
+  --text-muted: #6b776c;
+  --border: #d7ded2;
+  --border-strong: #b5c2ae;
+  --accent: #059669;
+  --on-accent: #ffffff;
+  --income: #047857;
+  --expense: #be123c;
+  --transfer: #0369a1;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  --selected: #e0f2e9;
+  --nav-bg: rgba(255, 255, 255, 0.88);
+  --balance-start: rgba(16, 185, 129, 0.12);
+  --balance-end: rgba(6, 182, 212, 0.05);
   --shadow-card: 0 14px 40px #24321d12;
+
+  /* Optical Glass Tokens - Light */
+  --glass-canvas-mesh:
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.04) 0px, transparent 50%);
+  --glass-l1: rgba(255, 255, 255, 0.75);
+  --glass-l2: rgba(255, 255, 255, 0.88);
+  --glass-l3: rgba(240, 244, 238, 0.7);
+  --glass-sheet: rgba(255, 255, 255, 0.96);
+  --specular-top: rgba(255, 255, 255, 0.95);
+  --specular-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 12px 32px -4px rgba(36, 50, 29, 0.08);
 }
