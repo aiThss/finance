@@ -7,10 +7,10 @@
 
 ## Download
 
-- [Download APK v0.0.1 (unsigned)](https://github.com/aiThss/finance/releases/download/v0.0.1/finance-v0.0.1-unsigned.apk)
+- [Download APK v0.0.1 (signed for testing)](https://github.com/aiThss/finance/releases/download/v0.0.1/finance-v0.0.1-signed-debug.apk)
 - [View release page and notes](https://github.com/aiThss/finance/releases/tag/v0.0.1)
 
-> Bản APK hiện là unsigned vì repo chưa cấu hình keystore release; cần ký bằng keystore riêng trước khi phát hành chính thức.
+> APK này đã được ký bằng debug keystore để cài đặt và test. Muốn phát hành chính thức hoặc cập nhật lâu dài, cần ký bằng keystore release riêng.
 
 ## Dùng được gì?
 
