@@ -243,9 +243,9 @@ export default function AI() {
                 onChange={(e) => setConsent(e.target.checked)}
               />
               <span>
-                Tôi đồng ý gửi nội dung/ảnh đã chọn, tên tài khoản và danh mục
-                cần thiết, hoặc số liệu tổng hợp cho Google Gemini. Không gửi
-                toàn bộ dữ liệu. Tôi sẽ kiểm tra gợi ý trước khi lưu.
+                Tôi đồng ý gửi nội dung/ảnh và danh mục liên quan đến Gemini để
+                xử lý. Dữ liệu chỉ dùng để phân tích và không lưu trữ trên máy
+                chủ.
               </span>
             </label>
           )}
@@ -263,10 +263,10 @@ export default function AI() {
             >
               <Send size={17} />
               {busy
-                ? "Đang nhờ Gemini…"
+                ? "Đang xử lý…"
                 : mode === "entry"
-                  ? "Gửi để tạo bản nháp"
-                  : "Gửi câu hỏi và số liệu"}
+                  ? "Tạo giao dịch từ nội dung"
+                  : "Gửi phân tích"}
             </button>
             {busy && (
               <button onClick={() => controller.current?.abort()}>
@@ -313,16 +313,17 @@ export default function AI() {
                   });
                 }}
               >
-                Kiểm tra & chỉnh sửa trước khi lưu
+                Áp dụng vào giao dịch
               </button>
             </section>
           )}
           {answer && (
             <section className="ai-result">
-              <h2>Góc nhìn từ Gemini</h2>
+              <h2>Kết quả phân tích</h2>
               <p className="ai-answer">{answer}</p>
               <small>
-                Gợi ý AI có thể sai. Số liệu trong báo cáo là nguồn đối chiếu.
+                Gợi ý từ AI chỉ mang tính tham khảo. Hãy đối chiếu với số liệu
+                thực tế.
               </small>
             </section>
           )}

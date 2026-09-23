@@ -23,7 +23,7 @@ export default function Categories() {
     <>
       <PageTitle
         title="Danh mục"
-        description="Sắp xếp chi tiêu theo cách của bạn."
+        description="Quản lý và phân loại các mục thu chi"
         action={
           <button
             className="icon-button accent"
@@ -44,9 +44,11 @@ export default function Categories() {
         }
       />
       {(["expense", "income"] as const).map((type) => (
-        <section key={type}>
-          <h2>{type === "expense" ? "Chi tiêu" : "Thu nhập"}</h2>
-          <div className="ledger">
+        <section key={type} style={{ marginTop: 20 }}>
+          <h2 style={{ marginBottom: 10 }}>
+            {type === "expense" ? "Chi tiêu" : "Thu nhập"}
+          </h2>
+          <div className="glass-bubble">
             {data.categories
               .filter((c) => c.type === type)
               .map((c) => (

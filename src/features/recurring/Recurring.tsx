@@ -47,7 +47,7 @@ export default function Recurring() {
     <>
       <PageTitle
         title="Thu chi định kỳ"
-        description="Nhớ lịch thanh toán, bớt một điều phải lo."
+        description="Theo dõi và nhắc nhở các khoản định kỳ"
         action={
           <button
             className="icon-button accent"
@@ -60,13 +60,13 @@ export default function Recurring() {
       />
       <p className="notice">
         <CalendarDays size={20} />
-        Đến hạn, bạn xác nhận để ghi nhận từng kỳ. Túi Nhỏ không tự trừ tiền hay
-        tự tạo giao dịch.
+        Khoản định kỳ cần bạn xác nhận thủ công khi đến hạn, không tự động trừ
+        tiền.
       </p>
       {!data.recurring.length && (
         <Empty
-          title="Những khoản quen thuộc"
-          description="Tiền nhà, gói internet hay lương hàng tháng. Đặt lịch để không bỏ sót."
+          title="Chưa có lịch định kỳ"
+          description="Thiết lập nhắc nhở tiền nhà, internet, hóa đơn hoặc lương định kỳ."
           action="Tạo lịch định kỳ"
           onAction={() => start()}
         />

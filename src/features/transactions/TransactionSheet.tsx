@@ -172,16 +172,16 @@ export function TransactionSheet({
   }
   return (
     <Sheet
-      title={draft.id ? "Chi tiết giao dịch" : "Ghi một khoản mới"}
+      title={draft.id ? "Chi tiết giao dịch" : "Thêm giao dịch"}
       onClose={onClose}
       dirty={!clean && (isDirty || type !== (draft.type ?? "expense"))}
     >
       {!accounts.length ? (
         <div className="empty">
-          <h3>Bắt đầu với một tài khoản</h3>
-          <p>Thêm tiền mặt, ngân hàng hoặc ví điện tử để ghi nhận giao dịch.</p>
+          <h3>Chưa có tài khoản</h3>
+          <p>Thêm ví tiền mặt, ngân hàng hoặc ví điện tử để ghi nhận giao dịch.</p>
           <Link className="primary" to="/accounts" onClick={onClose}>
-            Tạo tài khoản
+            Thêm tài khoản
           </Link>
         </div>
       ) : (
@@ -210,7 +210,7 @@ export function TransactionSheet({
               autoComplete="off"
               {...register("amount", { required: true })}
             />
-            <small>Có thể nhập 45000, 45k hoặc 1.2m</small>
+            <small>Hỗ trợ nhập tắt như 45k, 500k hoặc 1.2m</small>
           </label>
           <div className="form-grid">
             <label>

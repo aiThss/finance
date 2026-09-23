@@ -46,7 +46,7 @@ export default function Transactions() {
     <>
       <PageTitle
         title="Giao dịch"
-        description="Từng khoản nhỏ, một bức tranh rõ hơn."
+        description="Lịch sử thu chi và tìm kiếm giao dịch"
         action={
           <button
             className="icon-button accent"
@@ -164,8 +164,8 @@ export default function Transactions() {
       </div>
       {!items.length ? (
         <Empty
-          title="Chưa có giao dịch ở đây"
-          description="Thử đổi bộ lọc hoặc ghi lại khoản đầu tiên."
+          title="Không có giao dịch"
+          description="Thử đổi bộ lọc hoặc thêm giao dịch mới."
           action="Thêm giao dịch"
           onAction={() => openTransaction()}
         />
@@ -173,9 +173,11 @@ export default function Transactions() {
         days.map((day) => (
           <section key={day} className="day-group">
             <h2>{format(new Date(`${day}T12:00:00`), "dd / MM / yyyy")}</h2>
-            <TransactionRows
-              items={shown.filter((t) => dayKey(t.occurredAt) === day)}
-            />
+            <div className="glass-bubble">
+              <TransactionRows
+                items={shown.filter((t) => dayKey(t.occurredAt) === day)}
+              />
+            </div>
           </section>
         ))
       )}

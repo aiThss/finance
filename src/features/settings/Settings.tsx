@@ -57,7 +57,10 @@ export default function Settings() {
   }
   return (
     <>
-      <PageTitle title="Cài đặt" description="Túi Nhỏ, theo cách của bạn." />
+      <PageTitle
+        title="Cài đặt"
+        description="Tùy chỉnh ứng dụng và quản lý dữ liệu"
+      />
       <section className="settings-section">
         <h2>Hiển thị</h2>
         <label>
@@ -114,9 +117,8 @@ export default function Settings() {
       <section className="settings-section">
         <h2>Dữ liệu của bạn</h2>
         <p className="muted">
-          Lưu trên thiết bị và trình duyệt hiện tại. Không tự đồng bộ lên máy
-          chủ. Xuất bản sao thường xuyên và trước khi đổi thiết bị hoặc xóa dữ
-          liệu trình duyệt.
+          Dữ liệu được lưu trữ ngoại tuyến trên thiết bị này. Hãy xuất bản sao
+          lưu trước khi dọn dẹp hoặc đổi máy.
         </p>
         <div className="button-stack">
           <button disabled={busy} onClick={() => void exportData()}>
@@ -194,18 +196,18 @@ export default function Settings() {
       <section className="settings-section">
         <h2>Giao dịch định kỳ</h2>
         <p>
-          Luôn chờ bạn xác nhận từng kỳ. Không tự sinh giao dịch quá hạn, không
-          tự thanh toán.
+          Khoản định kỳ luôn cần bạn xác nhận thủ công khi đến hạn, không tự
+          động trừ tiền.
         </p>
       </section>
       <section className="settings-section">
         <h2>
           Túi Nhỏ <span className="muted">{version}</span>
         </h2>
-        <p>Một chút ghi chép, nhẹ lòng mỗi ngày.</p>
+        <p>Quản lý tài chính cá nhân tinh gọn, bảo mật & ngoại tuyến.</p>
         <p className="muted">
-          Không quảng cáo. Không theo dõi. Bản web, PWA và Android dùng chung
-          một ứng dụng.
+          Không quảng cáo. Không theo dõi. Dữ liệu chỉ nằm trên thiết bị của
+          bạn.
         </p>
         {import.meta.env.DEV && (
           <button

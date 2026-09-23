@@ -60,7 +60,7 @@ export default function Accounts() {
     <>
       <PageTitle
         title="Tài khoản"
-        description="Mỗi nơi giữ tiền, cùng một góc nhìn."
+        description="Quản lý các ví và tài khoản thanh toán"
         action={
           <button
             className="icon-button accent"
@@ -91,10 +91,12 @@ export default function Accounts() {
       </div>
       {!items.length && (
         <Empty
-          title={
-            archived ? "Không có tài khoản lưu trữ" : "Tiền của bạn đang ở đâu?"
+          title={archived ? "Chưa có tài khoản lưu trữ" : "Chưa có tài khoản"}
+          description={
+            archived
+              ? undefined
+              : "Thêm ví tiền mặt, ngân hàng hoặc ví điện tử để theo dõi."
           }
-          description="Thêm tài khoản cùng số dư ban đầu. Mọi thay đổi sau đó được tính từ giao dịch."
           action={!archived ? "Thêm tài khoản" : undefined}
           onAction={() => setEdit({})}
         />

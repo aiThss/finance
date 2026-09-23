@@ -39,7 +39,7 @@ export default function Budgets() {
     <>
       <PageTitle
         title="Ngân sách"
-        description="Cho mỗi dự định một khoảng vừa đủ."
+        description="Thiết lập và kiểm soát hạn mức chi tiêu"
         action={
           <button
             className="icon-button accent"
@@ -84,8 +84,8 @@ export default function Budgets() {
       )}
       {!items.length && (
         <Empty
-          title="Chi tiêu có kế hoạch"
-          description="Tạo hạn mức cho cả tháng hoặc riêng một danh mục. Bạn có thể điều chỉnh bất cứ lúc nào."
+          title="Chưa có ngân sách"
+          description="Đặt hạn mức theo tháng hoặc danh mục để quản lý chi tiêu."
           action="Tạo ngân sách"
           onAction={() =>
             start({

@@ -68,7 +68,7 @@ export default function Reports() {
     <>
       <PageTitle
         title="Báo cáo"
-        description="Hiểu thói quen, chủ động ngày mai."
+        description="Thống kê thu chi và phân tích xu hướng"
       />
       <label>
         Thời gian
@@ -115,8 +115,8 @@ export default function Reports() {
         <p role="alert">Chọn khoảng ngày hợp lệ.</p>
       ) : !items.length ? (
         <Empty
-          title="Bức tranh đang chờ nét đầu tiên"
-          description="Báo cáo sẽ xuất hiện khi bạn có giao dịch trong khoảng thời gian này."
+          title="Chưa có dữ liệu"
+          description="Báo cáo sẽ hiển thị khi có giao dịch trong khoảng thời gian đã chọn."
         />
       ) : (
         <>
@@ -202,57 +202,61 @@ export default function Reports() {
             {!categories.length ? (
               <p className="muted">Chưa có chi tiêu trong kỳ này.</p>
             ) : (
-              categories.map((c) => {
-                const cat = data.categories.find((x) => x.id === c.key);
-                const percent = Math.round(
-                  (c.amount / (totals.expense || 1)) * 100,
-                );
-                const color = cat?.color ?? "#64748B";
-                return (
-                  <div className="category-report" key={c.key}>
-                    <div className="section-heading">
-                      <span>{cat?.name ?? "Khác"}</span>
-                      <Money value={c.amount} />
-                    </div>
-                    <div
-                      className="liquid-progress"
-                      role="progressbar"
-                      aria-valuenow={percent}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      style={
-                        {
-                          "--progress-color": color,
-                        } as React.CSSProperties
-                      }
-                    >
+              <div className="glass-bubble">
+                {categories.map((c) => {
+                  const cat = data.categories.find((x) => x.id === c.key);
+                  const percent = Math.round(
+                    (c.amount / (totals.expense || 1)) * 100,
+                  );
+                  const color = cat?.color ?? "#64748B";
+                  return (
+                    <div className="category-report" key={c.key}>
+                      <div className="section-heading">
+                        <span>{cat?.name ?? "Khác"}</span>
+                        <Money value={c.amount} />
+                      </div>
                       <div
-                        className="liquid-progress-bar"
+                        className="liquid-progress"
+                        role="progressbar"
+                        aria-valuenow={percent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
                         style={
                           {
-                            width: `${Math.min(percent, 100)}%`,
                             "--progress-color": color,
                           } as React.CSSProperties
                         }
-                      />
+                      >
+                        <div
+                          className="liquid-progress-bar"
+                          style={
+                            {
+                              width: `${Math.min(percent, 100)}%`,
+                              "--progress-color": color,
+                            } as React.CSSProperties
+                          }
+                        />
+                      </div>
+                      <small>{percent}% tổng chi tiêu</small>
                     </div>
-                    <small>{percent}% tổng chi tiêu</small>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </section>
           <section>
             <h2>Cửa hàng chi nhiều nhất</h2>
-            {merchants.slice(0, 8).map((m, i) => (
-              <div className="report-row" key={m.key}>
-                <span>
-                  <span className="rank">{i + 1}</span>
-                  {m.key === "Khác" ? "Chưa ghi cửa hàng" : m.key}
-                </span>
-                <Money value={m.amount} />
-              </div>
-            ))}
+            <div className="glass-bubble">
+              {merchants.slice(0, 8).map((m, i) => (
+                <div className="report-row" key={m.key}>
+                  <span>
+                    <span className="rank">{i + 1}</span>
+                    {m.key === "Khác" ? "Chưa ghi cửa hàng" : m.key}
+                  </span>
+                  <Money value={m.amount} />
+                </div>
+              ))}
+            </div>
           </section>
           <section>
             <h2>Lịch sử số dư</h2>
@@ -270,30 +274,29 @@ export default function Reports() {
                 ))}
               </SelectField>
             </label>
-            <p className="muted">
-              Số dư ban đầu được coi là có trước giao dịch đầu tiên; gồm tài
-              khoản lưu trữ.
-            </p>
-            {months.map((m) => {
-              const end = dayKey(addMonths(startOfMonth(m), 1));
-              return (
-                <div className="report-row" key={monthKey(m)}>
-                  <span>{format(m, "MM / yyyy")}</span>
-                  <Money
-                    value={balanceService.getTotalBalance(
-                      data.accounts.filter(
-                        (a) => !historyAccount || a.id === historyAccount,
-                      ),
-                      data.transactions.filter(
-                        (t) =>
-                          dayKey(t.occurredAt) < end &&
-                          dayKey(t.occurredAt) <= to,
-                      ),
-                    )}
-                  />
-                </div>
-              );
-            })}
+            <p className="muted">Bao gồm cả các tài khoản đã lưu trữ.</p>
+            <div className="glass-bubble">
+              {months.map((m) => {
+                const end = dayKey(addMonths(startOfMonth(m), 1));
+                return (
+                  <div className="report-row" key={monthKey(m)}>
+                    <span>{format(m, "MM / yyyy")}</span>
+                    <Money
+                      value={balanceService.getTotalBalance(
+                        data.accounts.filter(
+                          (a) => !historyAccount || a.id === historyAccount,
+                        ),
+                        data.transactions.filter(
+                          (t) =>
+                            dayKey(t.occurredAt) < end &&
+                            dayKey(t.occurredAt) <= to,
+                        ),
+                      )}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </section>
         </>
       )}

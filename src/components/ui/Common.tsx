@@ -25,17 +25,17 @@ export function Empty({
   onAction,
 }: {
   title: string;
-  description: string;
+  description?: string;
   action?: string;
   onAction?: () => void;
 }) {
   return (
     <div className="empty">
       <span className="empty-icon">
-        <Wallet size={28} strokeWidth={1.4} />
+        <Wallet size={26} strokeWidth={1.5} />
       </span>
       <h3>{title}</h3>
-      <p>{description}</p>
+      {description && <p>{description}</p>}
       {action && (
         <button className="primary" onClick={onAction}>
           <Plus size={18} />

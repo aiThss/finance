@@ -14,41 +14,42 @@ export default function More() {
     [
       "/budgets",
       "Ngân sách",
-      "Đặt giới hạn chi tiêu mỗi tháng",
+      "Hạn mức chi tiêu",
       ChartNoAxesCombined,
     ],
-    ["/settings", "Cài đặt", "Giao diện, sao lưu và quyền riêng tư", Settings],
     [
       "/reports",
       "Báo cáo",
-      "Một bức tranh rõ hơn về thu chi",
+      "Thống kê và xu hướng dòng tiền",
       ChartNoAxesCombined,
     ],
-    ["/recurring", "Thu chi định kỳ", "Những khoản quen thuộc", CalendarDays],
-    ["/categories", "Danh mục", "Sắp xếp theo cách của bạn", Tags],
-    ["/ai", "Trợ lý AI", "Nhập bằng lời, đọc hóa đơn", Sparkles],
+    ["/settings", "Cài đặt", "Giao diện, sao lưu và bảo mật", Settings],
+    ["/recurring", "Thu chi định kỳ", "Quản lý các khoản định kỳ", CalendarDays],
+    ["/categories", "Danh mục", "Phân loại danh mục thu chi", Tags],
+    ["/ai", "Trợ lý AI", "Nhận diện văn bản & hóa đơn", Sparkles],
     ["/trash", "Thùng rác", "Khôi phục giao dịch đã xóa", Trash2],
   ] as const;
   return (
     <>
       <PageTitle
-        title="Góc của bạn"
-        description="Mọi thứ để chiếc túi gọn gàng hơn."
+        title="Mở rộng"
+        description="Công cụ quản lý tài chính và cài đặt hệ thống"
       />
-      {entries.slice(0, 3).map(([to, title, description, Icon]) => (
-        <Link className="more-row" key={to} to={to}>
-          <span className="category-icon">
-            <Icon size={21} />
-          </span>
-          <span>
-            <strong>{title}</strong>
-            <small>{description}</small>
-          </span>
-          <ChevronRight size={18} />
-        </Link>
-      ))}
-      <details className="extra-tools">
-        <summary>Công cụ khác</summary>
+      <div className="glass-bubble more-group">
+        {entries.slice(0, 3).map(([to, title, description, Icon]) => (
+          <Link className="more-row" key={to} to={to}>
+            <span className="category-icon">
+              <Icon size={21} />
+            </span>
+            <span>
+              <strong>{title}</strong>
+              <small>{description}</small>
+            </span>
+            <ChevronRight size={18} />
+          </Link>
+        ))}
+      </div>
+      <div className="glass-bubble more-group" style={{ marginTop: 14 }}>
         {entries.slice(3).map(([to, title, description, Icon]) => (
           <Link className="more-row" key={to} to={to}>
             <span className="category-icon">
@@ -61,9 +62,9 @@ export default function More() {
             <ChevronRight size={18} />
           </Link>
         ))}
-      </details>
+      </div>
       <p className="local-note">
-        Túi Nhỏ · Một chút ghi chép, nhẹ lòng mỗi ngày.
+        Túi Nhỏ · Quản lý tài chính cá nhân an toàn & ngoại tuyến
       </p>
     </>
   );

@@ -115,25 +115,27 @@ export default function Dashboard() {
         </div>
       </section>
       {previous.expense > 0 && (
-        <p className="comparison">
-          Chi tiêu {totals.expense <= previous.expense ? "giảm" : "tăng"}{" "}
-          <Money value={Math.abs(totals.expense - previous.expense)} /> so với
-          tháng trước.
-        </p>
+        <div className="comparison-banner">
+          <span>
+            So với tháng trước: Chi tiêu{" "}
+            {totals.expense <= previous.expense ? "giảm" : "tăng"}{" "}
+            <Money value={Math.abs(totals.expense - previous.expense)} />
+          </span>
+        </div>
       )}
       {!data.accounts.length && (
         <Empty
-          title="Một chiếc túi, một khởi đầu."
-          description="Thêm tài khoản đầu tiên. Những khoản thu chi của bạn được giữ riêng trên thiết bị này."
+          title="Chưa có tài khoản"
+          description="Tạo tài khoản đầu tiên để bắt đầu theo dõi thu chi."
           action="Thêm tài khoản"
           onAction={() => navigate("/accounts")}
         />
       )}
       {!!data.accounts.length && !recent.length && (
         <Empty
-          title="Bắt đầu từ một khoản nhỏ"
-          description="Bữa trưa, ly cà phê, hay khoản lương đầu tháng. Ghi lại để hiểu tiền của mình hơn."
-          action="Thêm giao dịch đầu tiên"
+          title="Chưa có giao dịch"
+          description="Ghi lại thu chi để theo dõi dòng tiền chính xác."
+          action="Thêm giao dịch"
           onAction={() => openTransaction()}
         />
       )}
@@ -145,12 +147,14 @@ export default function Dashboard() {
               Tất cả <ArrowRight size={15} />
             </Link>
           </div>
-          <TransactionRows items={recent} />
+          <div className="glass-bubble">
+            <TransactionRows items={recent} />
+          </div>
         </section>
       )}
       {!!due.length && (
-        <Link className="more-row" to="/recurring">
-          <span>{due.length} khoản đến hạn cần xác nhận</span>
+        <Link className="more-row glass-bubble due-bubble" to="/recurring">
+          <span>{due.length} khoản định kỳ đến hạn cần xác nhận</span>
           <ArrowRight size={18} />
         </Link>
       )}
