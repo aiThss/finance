@@ -1,6 +1,16 @@
 # Túi Nhỏ
 
+[![Download APK](https://img.shields.io/badge/Download-APK-3DDC84?logo=android&logoColor=white)](#download)
+[![Latest release](https://img.shields.io/github/v/release/aiThss/finance?display_name=tag&label=Latest%20release&logo=github)](#download)
+
 Ứng dụng thu chi cá nhân tiếng Việt, ưu tiên điện thoại Android. React web → PWA → cùng bản build Vite trong Capacitor 8. Dữ liệu ở IndexedDB trên thiết bị, không đăng nhập và không đồng bộ đám mây.
+
+## Download
+
+- [Download APK v0.0.1 (unsigned)](https://github.com/aiThss/finance/releases/download/v0.0.1/finance-v0.0.1-unsigned.apk)
+- [View release page and notes](https://github.com/aiThss/finance/releases/tag/v0.0.1)
+
+> Bản APK hiện là unsigned vì repo chưa cấu hình keystore release; cần ký bằng keystore riêng trước khi phát hành chính thức.
 
 ## Dùng được gì?
 
