@@ -12,17 +12,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useApp } from "../../app/context";
-
-const accountTypeConfig: Record<
-  Account["type"],
-  { icon: typeof Wallet; color: string }
-> = {
-  cash: { icon: Banknote, color: "#10B981" },
-  bank: { icon: Building2, color: "#3B82F6" },
-  ewallet: { icon: Smartphone, color: "#D946EF" },
-  savings: { icon: PiggyBank, color: "#F59E0B" },
-  credit: { icon: CreditCard, color: "#F43F5E" },
-};
 import { accountBalances, sum, parseMoney } from "../../domain/money";
 import { accountRepository, now, uid } from "../../db/repositories";
 import type { Account } from "../../domain/schema";
@@ -35,6 +24,17 @@ import {
 } from "../../components/ui/Common";
 import { Sheet, dismissSheet } from "../../components/ui/Sheet";
 import { vi } from "../../locales/vi";
+
+const accountTypeConfig: Record<
+  Account["type"],
+  { icon: typeof Wallet; color: string }
+> = {
+  cash: { icon: Banknote, color: "#10B981" },
+  bank: { icon: Building2, color: "#3B82F6" },
+  ewallet: { icon: Smartphone, color: "#D946EF" },
+  savings: { icon: PiggyBank, color: "#F59E0B" },
+  credit: { icon: CreditCard, color: "#F43F5E" },
+};
 export default function Accounts() {
   const { data, notify } = useApp();
   const [edit, setEdit] = useState<Partial<Account> | null>(null);

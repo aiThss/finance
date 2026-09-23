@@ -12,6 +12,7 @@ export function BottomNavigation({ onAdd }: { onAdd: () => void }) {
         <span>Giao dịch</span>
       </NavLink>
       <button
+        type="button"
         className="add-nav"
         aria-label="Thêm giao dịch"
         onClick={() => onAdd()}

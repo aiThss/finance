@@ -58,6 +58,22 @@ it("upgrades v2 legacy category colors to 16 jewel palette and preserves custom 
       color: "#c2c9b7", // custom category with legacy default color
       archived: false,
     },
+    {
+      id: "cat-6",
+      name: "Mua sắm",
+      type: "expense",
+      icon: "shopping",
+      color: "#b9d5a4", // category with old custom default color
+      archived: false,
+    },
+    {
+      id: "cat-7",
+      name: "  Du lịch  ",
+      type: "expense",
+      icon: "plane",
+      color: "#c2c9b7", // name with surrounding whitespace
+      archived: false,
+    },
   ]);
   old.close();
 
@@ -69,6 +85,8 @@ it("upgrades v2 legacy category colors to 16 jewel palette and preserves custom 
   const cat3 = await updated.categories.get("cat-3");
   const cat4 = await updated.categories.get("cat-4");
   const cat5 = await updated.categories.get("cat-5");
+  const cat6 = await updated.categories.get("cat-6");
+  const cat7 = await updated.categories.get("cat-7");
 
   expect(cat1?.color).toBe(DEFAULT_JEWEL_MAP["Ăn uống"]);
   expect(cat1?.color).toBe("#F97316");
@@ -84,6 +102,14 @@ it("upgrades v2 legacy category colors to 16 jewel palette and preserves custom 
 
   // Unknown category with legacy color gets mapped to sensible fallback
   expect(cat5?.color).toBe("#64748B");
+
+  // Category with #b9d5a4 gets mapped to jewel color
+  expect(cat6?.color).toBe(DEFAULT_JEWEL_MAP["Mua sắm"]);
+  expect(cat6?.color).toBe("#D946EF");
+
+  // Category with whitespace-padded name gets mapped
+  expect(cat7?.color).toBe(DEFAULT_JEWEL_MAP["Du lịch"]);
+  expect(cat7?.color).toBe("#06B6D4");
 
   await updated.delete();
 });

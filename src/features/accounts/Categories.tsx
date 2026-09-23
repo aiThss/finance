@@ -34,7 +34,7 @@ export default function Categories() {
                 name: "",
                 type: "expense",
                 icon: "wallet",
-                color: "#b9d5a4",
+                color: jewelColors[0],
                 archived: false,
               })
             }
@@ -149,7 +149,7 @@ export default function Categories() {
                   <button
                     key={color}
                     type="button"
-                    className={`swatch-btn ${edit.color.toLowerCase() === color.toLowerCase() ? "selected" : ""}`}
+                    className={`swatch-btn ${(edit.color || "").toLowerCase() === color.toLowerCase() ? "selected" : ""}`}
                     style={{ backgroundColor: color }}
                     aria-label={`Chọn màu ${color}`}
                     onClick={() => {
@@ -163,7 +163,7 @@ export default function Categories() {
                 Màu tùy chỉnh
                 <input
                   type="color"
-                  value={edit.color}
+                  value={edit.color || jewelColors[0]}
                   onChange={(e) => {
                     setEdit({ ...edit, color: e.target.value });
                     setDirty(true);

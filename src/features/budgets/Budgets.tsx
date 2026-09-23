@@ -102,24 +102,29 @@ export default function Budgets() {
       {items.map((b) => {
         const s = budgetStatus(b, data.transactions, month);
         const category = data.categories.find((c) => c.id === b.categoryId);
+        const percent = Number.isFinite(s.percent)
+          ? Math.max(0, s.percent)
+          : b.amountMinor === 0 && s.spent > 0
+            ? 100
+            : 0;
         const progressColor =
-          s.percent >= 100
+          percent >= 100
             ? "var(--danger)"
-            : s.percent >= 80
+            : percent >= 80
               ? "var(--warning)"
               : (category?.color ?? "var(--accent)");
         const progressClass =
-          s.percent >= 100 ? "over" : s.percent >= 80 ? "near" : "";
+          percent >= 100 ? "over" : percent >= 80 ? "near" : "";
         return (
           <button className="budget-card" key={b.id} onClick={() => start(b)}>
             <div className="section-heading">
               <h2>{b.name}</h2>
-              <span className={`status-chip ${s.percent >= 100 ? "over" : ""}`}>
+              <span className={`status-chip ${percent >= 100 ? "over" : ""}`}>
                 {!b.enabled
                   ? "Tạm dừng"
-                  : s.percent >= 100
+                  : percent >= 100
                     ? "Vượt hạn mức"
-                    : s.percent >= 80
+                    : percent >= 80
                       ? "Gần hạn mức"
                       : "Trong kế hoạch"}
               </span>
@@ -134,7 +139,7 @@ export default function Budgets() {
             <div
               className="liquid-progress"
               role="progressbar"
-              aria-valuenow={Math.round(s.percent)}
+              aria-valuenow={Math.round(percent)}
               aria-valuemin={0}
               aria-valuemax={100}
               style={
@@ -147,7 +152,7 @@ export default function Budgets() {
                 className={`liquid-progress-bar ${progressClass}`}
                 style={
                   {
-                    width: `${Math.min(s.percent, 100)}%`,
+                    width: `${Math.min(percent, 100)}%`,
                     "--progress-color": progressColor,
                   } as React.CSSProperties
                 }
@@ -158,7 +163,7 @@ export default function Budgets() {
                 {s.remaining >= 0 ? "Còn lại" : "Vượt"}{" "}
                 <Money value={Math.abs(s.remaining)} />
               </span>
-              <span>{Math.round(s.percent)}%</span>
+              <span>{Math.round(percent)}%</span>
             </div>
           </button>
         );

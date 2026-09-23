@@ -105,7 +105,13 @@ export default function Dashboard() {
         </div>
         <div className="net-summary">
           <span>Dòng tiền ròng</span>
-          <Money value={totals.net} sign />
+          <Money
+            value={totals.net}
+            sign
+            className={
+              totals.net > 0 ? "income" : totals.net < 0 ? "expense" : ""
+            }
+          />
         </div>
       </section>
       {previous.expense > 0 && (

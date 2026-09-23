@@ -20,7 +20,7 @@ export const DEFAULT_JEWEL_MAP: Record<string, string> = {
   "Thu nhập khác": "#84CC16",
 };
 
-const OLD_COLORS = new Set(["#c2c9b7", "#9ac5b0"]);
+const OLD_COLORS = new Set(["#c2c9b7", "#9ac5b0", "#b9d5a4"]);
 
 export async function migrateToV3(tx: DexieTransaction) {
   await tx
@@ -29,8 +29,9 @@ export async function migrateToV3(tx: DexieTransaction) {
     .modify((c) => {
       const colorLower = (c.color || "").toLowerCase();
       if (!c.color || OLD_COLORS.has(colorLower)) {
-        if (c.name && DEFAULT_JEWEL_MAP[c.name]) {
-          c.color = DEFAULT_JEWEL_MAP[c.name];
+        const name = c.name?.trim();
+        if (name && DEFAULT_JEWEL_MAP[name]) {
+          c.color = DEFAULT_JEWEL_MAP[name];
         } else if (c.type === "income") {
           c.color = "#10B981";
         } else {
