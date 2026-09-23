@@ -115,7 +115,7 @@ test("mobile widths, themes and desktop have no horizontal overflow", async ({
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: "Mỗi ngày, nhẹ lòng hơn." }),
+      page.getByRole("heading", { name: "Tổng quan" }),
     ).toBeVisible();
     expect(
       await page.evaluate(
@@ -210,4 +210,60 @@ test("discard confirmation and browser back keep unsaved forms safe", async ({
   await page.goBack();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".hero-amount")).toContainText("1.000.000");
+});
+
+test("calm navigation survives rapid tab changes and respects reduced motion", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Điều hướng chính" });
+  await nav.getByRole("link", { name: "Khác", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Góc của bạn" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Trợ lý AI/ })).toBeHidden();
+  await page.getByText("Công cụ khác", { exact: true }).click();
+  await expect(page.getByRole("link", { name: /Trợ lý AI/ })).toBeVisible();
+  await page.evaluate(() => {
+    const nav = document.querySelector(".bottom-nav")!;
+    (nav.querySelector('a[href="/transactions"]') as HTMLElement).click();
+    (nav.querySelector('a[href="/accounts"]') as HTMLElement).click();
+  });
+  await expect(page).toHaveURL(/\/accounts$/);
+  await expect(page.locator(".page-transition")).not.toHaveAttribute("inert");
+  await expect(page.locator("h1")).toContainText("Tài khoản");
+  await expect(page.locator(".page-transition")).toHaveCSS("opacity", "1");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await nav.getByRole("link", { name: "Tổng quan", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Tổng quan" })).toBeVisible();
+  await expect(page.locator(".page-enter")).toHaveCSS("animation-name", "none");
+});
+
+test("readable entry keeps its header reachable on short screens", async ({
+  page,
+}) => {
+  await account(page, "Ví thử", "1000000");
+  await page.setViewportSize({ width: 320, height: 560 });
+  await page
+    .getByRole("button", { name: "Thêm giao dịch", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByLabel("Cửa hàng / người nhận")).toBeHidden();
+  await expect(dialog.getByLabel("Nội dung", { exact: true })).toHaveCSS(
+    "font-size",
+    "16px",
+  );
+  await dialog.getByText("Thêm chi tiết · ngày, ghi chú").click();
+  await dialog
+    .getByLabel("Ghi chú", { exact: true })
+    .fill("Ghi chú ở cuối form");
+  const header = await dialog.locator(".sheet-header").boundingBox();
+  expect(header!.y).toBeGreaterThanOrEqual(0);
+  expect(header!.y + header!.height).toBeLessThan(560);
+  expect(await dialog.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(
+    true,
+  );
+  page.once("dialog", (d) => d.accept());
+  await dialog.getByRole("button", { name: "Đóng", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
 });

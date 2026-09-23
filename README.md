@@ -122,3 +122,8 @@ Project đã có Capacitor Android 8; app ID `com.aithss.finance` (đổi trư�
 Release: chọn Build → Generate Signed App Bundle / APK trong Android Studio, tạo keystore riêng, tăng `versionCode`/`versionName` trong `android/app/build.gradle`; build bản release đã ký. Không commit keystore/password. CLI tương đương `cd android && ./gradlew bundleRelease` sau khi cấu hình signing. Bản unsigned không đủ để phát hành. Web không phụ thuộc Android SDK.
 
 Safe-area CSS, resize khi bàn phím mở, Android back đóng sheet và hỏi khi chưa lưu. Cần smoke-test trên thiết bị Android thật trước phát hành store: bàn phím, back, native share, splash/status bar, cập nhật và dữ liệu offline. Xem [tài liệu Capacitor Android](https://capacitorjs.com/docs/android).
+
+### Cập nhật APK khi sửa vùng thanh trạng thái
+Bản sửa 23/09 dùng SystemBars của Capacitor để chừa vùng status bar, camera cutout và bàn phím trên Android; bỏ plugin StatusBar cũ và `resizeOnFullScreen`. Cần **build và cài APK mới**, redeploy Dokploy chỉ cập nhật web. Dùng cùng applicationId và khóa ký để nâng cấp tại chỗ; không gỡ app đang chứa dữ liệu.
+
+GitHub Actions `Verify` có job `android-build` tạo artifact `tui-nho-debug-apk` để kiểm tra biên dịch. Đây là bản debug, không thay thế APK release ký bằng khóa hiện tại. Khi phát hành, tăng versionCode và dùng quy trình ký release ở trên. Xác minh trên điện thoại: mở lạnh, mọi tab, xoay ngang, mở bàn phím, Back và đóng form; kiểm tra cả điều hướng cử chỉ và 3 nút.

@@ -21,6 +21,18 @@ interface FormValues {
   note: string;
   date: string;
 }
+const everydayCategories = [
+  "Ăn uống",
+  "Cà phê",
+  "Di chuyển",
+  "Mua sắm",
+  "Gia đình",
+  "Tiền nhà",
+];
+const categoryPriority = (name: string) => {
+  const index = everydayCategories.indexOf(name);
+  return index < 0 ? everydayCategories.length : index;
+};
 export function TransactionSheet({
   draft,
   onClose,
@@ -32,6 +44,7 @@ export function TransactionSheet({
   const [type, setType] = useState<Transaction["type"]>(
     draft.type ?? "expense",
   );
+  const [allCategories, setAllCategories] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [clean, setClean] = useState(false);
@@ -81,7 +94,10 @@ export function TransactionSheet({
     )
     .sort(
       (a, b) =>
-        (categoryFrequency.get(b.id) ?? 0) - (categoryFrequency.get(a.id) ?? 0),
+        (categoryFrequency.get(b.id) ?? 0) -
+          (categoryFrequency.get(a.id) ?? 0) ||
+        categoryPriority(a.name) - categoryPriority(b.name) ||
+        a.name.localeCompare(b.name, "vi"),
     );
   const categoryId = watch("categoryId");
   async function save(v: FormValues, another = false) {
@@ -188,7 +204,6 @@ export function TransactionSheet({
           <label className="amount-field">
             Số tiền <span>VND</span>
             <input
-              autoFocus
               inputMode="decimal"
               placeholder="0"
               autoComplete="off"
@@ -224,21 +239,35 @@ export function TransactionSheet({
             <fieldset>
               <legend>Danh mục</legend>
               <div className="category-picker">
-                {categories.map((c) => (
-                  <button
-                    className={categoryId === c.id ? "chosen" : ""}
-                    type="button"
-                    key={c.id}
-                    aria-pressed={categoryId === c.id}
-                    onClick={() =>
-                      setValue("categoryId", c.id, { shouldDirty: true })
-                    }
-                  >
-                    <CategoryIcon name={c.icon} />
-                    <span>{c.name}</span>
-                  </button>
-                ))}
+                {categories
+                  .filter(
+                    (c, i) => allCategories || i < 6 || c.id === categoryId,
+                  )
+                  .map((c) => (
+                    <button
+                      className={categoryId === c.id ? "chosen" : ""}
+                      type="button"
+                      key={c.id}
+                      aria-pressed={categoryId === c.id}
+                      onClick={() =>
+                        setValue("categoryId", c.id, { shouldDirty: true })
+                      }
+                    >
+                      <CategoryIcon name={c.icon} />
+                      <span>{c.name}</span>
+                    </button>
+                  ))}
               </div>
+              {categories.length > 6 && (
+                <button
+                  type="button"
+                  className="text-button"
+                  aria-expanded={allCategories}
+                  onClick={() => setAllCategories(!allCategories)}
+                >
+                  {allCategories ? "Thu gọn danh mục" : "Xem tất cả danh mục"}
+                </button>
+              )}
             </fieldset>
           )}
           <label>
@@ -249,27 +278,30 @@ export function TransactionSheet({
               {...register("title")}
             />
           </label>
-          <label>
-            Cửa hàng / người nhận
-            <input
-              placeholder="Không bắt buộc"
-              maxLength={120}
-              {...register("merchant")}
-            />
-          </label>
-          <label>
-            Thời gian
-            <input type="datetime-local" required {...register("date")} />
-          </label>
-          <label>
-            Ghi chú
-            <textarea
-              rows={2}
-              placeholder="Thêm một chút chi tiết…"
-              maxLength={2000}
-              {...register("note")}
-            />
-          </label>
+          <details className="entry-details">
+            <summary>Thêm chi tiết · ngày, ghi chú</summary>
+            <label>
+              Cửa hàng / người nhận
+              <input
+                placeholder="Không bắt buộc"
+                maxLength={120}
+                {...register("merchant")}
+              />
+            </label>
+            <label>
+              Thời gian
+              <input type="datetime-local" required {...register("date")} />
+            </label>
+            <label>
+              Ghi chú
+              <textarea
+                rows={2}
+                placeholder="Thêm một chút chi tiết…"
+                maxLength={2000}
+                {...register("note")}
+              />
+            </label>
+          </details>
           <ErrorText error={error} />
           <footer className="sheet-footer">
             <button className="primary" disabled={busy} type="submit">

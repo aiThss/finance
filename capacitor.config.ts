@@ -6,9 +6,12 @@ const config: CapacitorConfig = {
   server: { androidScheme: "https" },
   plugins: {
     SplashScreen: { launchShowDuration: 400, backgroundColor: "#111513" },
-    Keyboard: { resize: "body", resizeOnFullScreen: true },
-    SystemBars: { insetsHandling: "css", style: "DARK" },
-    StatusBar: { backgroundColor: "#111513", style: "DARK" },
+    Keyboard: { resize: "body" },
+    SystemBars: {
+      insetsHandling: "native",
+      initialViewportFitValueHint: "contain",
+      style: "DARK",
+    },
   },
 };
 export default config;

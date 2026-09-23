@@ -4,6 +4,7 @@ import {
   Suspense,
   useEffect,
   useState,
+  useRef,
   type ReactNode,
 } from "react";
 import {
@@ -76,7 +77,13 @@ export class ErrorBoundary extends Component<
 }
 function More() {
   const entries = [
-    ["/accounts", "Tài khoản", "Tiền mặt, ngân hàng và các ví", Wallet],
+    [
+      "/budgets",
+      "Ngân sách",
+      "Đặt giới hạn chi tiêu mỗi tháng",
+      ChartNoAxesCombined,
+    ],
+    ["/settings", "Cài đặt", "Giao diện, sao lưu và quyền riêng tư", Settings],
     [
       "/reports",
       "Báo cáo",
@@ -87,7 +94,6 @@ function More() {
     ["/categories", "Danh mục", "Sắp xếp theo cách của bạn", Tags],
     ["/ai", "Trợ lý AI", "Nhập bằng lời, đọc hóa đơn", Sparkles],
     ["/trash", "Thùng rác", "Khôi phục giao dịch đã xóa", Trash2],
-    ["/settings", "Cài đặt", "Giao diện, sao lưu và quyền riêng tư", Settings],
   ] as const;
   return (
     <>
@@ -95,7 +101,7 @@ function More() {
         title="Góc của bạn"
         description="Mọi thứ để chiếc túi gọn gàng hơn."
       />
-      {entries.map(([to, title, description, Icon]) => (
+      {entries.slice(0, 3).map(([to, title, description, Icon]) => (
         <Link className="more-row" key={to} to={to}>
           <span className="category-icon">
             <Icon size={21} />
@@ -107,10 +113,88 @@ function More() {
           <ChevronRight size={18} />
         </Link>
       ))}
+      <details className="extra-tools">
+        <summary>Công cụ khác</summary>
+        {entries.slice(3).map(([to, title, description, Icon]) => (
+          <Link className="more-row" key={to} to={to}>
+            <span className="category-icon">
+              <Icon size={21} />
+            </span>
+            <span>
+              <strong>{title}</strong>
+              <small>{description}</small>
+            </span>
+            <ChevronRight size={18} />
+          </Link>
+        ))}
+      </details>
       <p className="local-note">
         Túi Nhỏ · Một chút ghi chép, nhẹ lòng mỗi ngày.
       </p>
     </>
+  );
+}
+function PageTransition() {
+  const location = useLocation();
+  const [displayed, setDisplayed] = useState(location);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (displayed.pathname === location.pathname) return;
+    const node = ref.current!;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let cancelled = false;
+    const exit = node.animate(
+      [
+        { opacity: 1, transform: "translateY(0)" },
+        { opacity: 0, transform: "translateY(-6px)" },
+      ],
+      { duration: reduced ? 0 : 90, easing: "ease-in", fill: "forwards" },
+    );
+    void exit.finished
+      .then(() => {
+        if (cancelled) return;
+        window.scrollTo(0, 0);
+        setDisplayed(location);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      exit.cancel();
+    };
+  }, [location, displayed.pathname]);
+  return (
+    <div
+      ref={ref}
+      className="page-transition"
+      inert={displayed.pathname !== location.pathname}
+    >
+      <div key={displayed.pathname} className="page-enter">
+        <Suspense fallback={<p role="status">Đang mở…</p>}>
+          <Routes location={displayed}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/accounts" element={<Accounts />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/budgets" element={<Budgets />} />
+            <Route path="/recurring" element={<Recurring />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/ai" element={<AI />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/trash" element={<Trash />} />
+            <Route path="/more" element={<More />} />
+            <Route
+              path="*"
+              element={
+                <>
+                  <PageTitle title="Không tìm thấy trang" />
+                  <Link to="/">Về tổng quan</Link>
+                </>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </div>
+    </div>
   );
 }
 function Shell() {
@@ -123,7 +207,6 @@ function Shell() {
     label?: string;
   } | null>(null);
   const [offline, setOffline] = useState(!navigator.onLine);
-  const location = useLocation();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const {
@@ -174,9 +257,6 @@ function Shell() {
     return () => clearTimeout(id);
   }, [toast]);
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-  useEffect(() => {
     if (data && params.has("add")) {
       setDraft({ type: params.get("add") === "income" ? "income" : "expense" });
       setParams({}, { replace: true });
@@ -226,11 +306,7 @@ function Shell() {
           {[
             ["/", "Tổng quan", House],
             ["/transactions", "Giao dịch", ArrowLeftRight],
-            ["/budgets", "Ngân sách", ChartNoAxesCombined],
-            ["/accounts", "Tài khoản", Wallet],
-            ["/reports", "Báo cáo", ChartNoAxesCombined],
-            ["/recurring", "Định kỳ", CalendarDays],
-            ["/ai", "Trợ lý AI", Sparkles],
+            ["/accounts", "Ví tiền", Wallet],
             ["/more", "Góc của bạn", Ellipsis],
           ].map(([to, label, Icon]) => {
             const I = Icon as typeof House;
@@ -267,30 +343,7 @@ function Shell() {
             Đang ngoại tuyến · Thu chi vẫn hoạt động
           </div>
         )}
-        <Suspense fallback={<p role="status">Đang mở…</p>}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/budgets" element={<Budgets />} />
-            <Route path="/recurring" element={<Recurring />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/ai" element={<AI />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/trash" element={<Trash />} />
-            <Route path="/more" element={<More />} />
-            <Route
-              path="*"
-              element={
-                <>
-                  <PageTitle title="Không tìm thấy trang" />
-                  <Link to="/">Về tổng quan</Link>
-                </>
-              }
-            />
-          </Routes>
-        </Suspense>
+        <PageTransition />
       </main>
       <nav className="bottom-nav" aria-label="Điều hướng chính">
         <NavLink to="/" end>
@@ -311,9 +364,9 @@ function Shell() {
           </span>
           <small>Ghi chép</small>
         </button>
-        <NavLink to="/budgets">
-          <ChartNoAxesCombined size={21} />
-          <span>Ngân sách</span>
+        <NavLink to="/accounts">
+          <Wallet size={21} />
+          <span>Ví tiền</span>
         </NavLink>
         <NavLink to="/more">
           <Ellipsis size={22} />

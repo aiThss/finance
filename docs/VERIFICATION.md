@@ -32,3 +32,10 @@ Hiệu năng: route Reports/AI tải riêng, JS chính khoảng 53 KB gzip (vend
 ![Mobile dark](screenshots/dashboard-390.png)
 ![Mobile light 320px](screenshots/dashboard-light-320.png)
 ![Desktop](screenshots/dashboard-1280.png)
+
+## Cập nhật giao diện — 23/09/2026
+- Production build, ESLint, 20 unit/repository/API tests và 6 browser E2E đều qua.
+- E2E mới kiểm tra đổi tab liên tục, reduced motion, công cụ thu gọn và header form khi cuộn ở viewport 320×560. Kiểm tra responsive được chạy lại sau chỉnh khoảng cách/nav.
+- Ảnh desktop/mobile ở trên là Chromium trên Windows, không phải ảnh Android.
+- Native sync thành công sau khi bỏ StatusBar cũ và Keyboard.resizeOnFullScreen. HTML mặc định viewport-fit=contain khớp hint khởi tạo SystemBars; web đổi sang cover trước React render. Tránh việc listener native đọc cover trước khi module JS tải xong.
+- Android CI build được thêm để kiểm tra biên dịch. Chưa xác minh hiển thị hoặc bàn phím trên Android thật trong phiên này. Bản sửa yêu cầu build/cài APK mới; redeploy web không thay thế native binary.

@@ -21,8 +21,9 @@ export function Sheet({
   closeRef.current = onClose;
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
+  const closingRef = useRef(false);
   function requestClose() {
-    history.back();
+    if (!closingRef.current) history.back();
   }
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
@@ -30,6 +31,7 @@ export function Sheet({
     dialog.showModal();
     document.body.style.overflow = "hidden";
     const previousState = history.state;
+    let closingAnimation: Animation | undefined;
     history.pushState({ ...previousState, sheet: true }, "");
     const commit = () => {
       dirtyRef.current = false;
@@ -37,6 +39,7 @@ export function Sheet({
     };
     window.addEventListener("sheet:commit", commit);
     const pop = () => {
+      if (closingRef.current) return;
       if (
         dirtyRef.current &&
         !window.confirm("Bạn có thay đổi chưa lưu. Bỏ thay đổi?")
@@ -44,7 +47,24 @@ export function Sheet({
         history.pushState({ ...previousState, sheet: true }, "");
         return;
       }
-      closeRef.current();
+      closingRef.current = true;
+      dialog.inert = true;
+      closingAnimation = dialog.animate(
+        [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(24px)" },
+        ],
+        {
+          duration: matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? 0
+            : 160,
+          easing: "ease-in",
+          fill: "forwards",
+        },
+      );
+      void closingAnimation.finished
+        .then(() => closeRef.current())
+        .catch(() => {});
     };
     window.addEventListener("popstate", pop);
     const unload = (e: BeforeUnloadEvent) => {
@@ -56,8 +76,9 @@ export function Sheet({
       window.removeEventListener("sheet:commit", commit);
       window.removeEventListener("beforeunload", unload);
       document.body.style.overflow = "";
+      closingAnimation?.cancel();
       dialog.close();
-      previous?.focus();
+      previous?.focus({ preventScroll: true });
       if (history.state?.sheet) history.replaceState(previousState, "");
     };
   }, []);
