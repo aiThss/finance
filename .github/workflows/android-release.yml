@@ -49,28 +49,64 @@ jobs:
           npm run build
           npx cap sync android
 
-      - name: Build unsigned release APK
+      - name: Build release APK with SDK 36
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
-      - name: Prepare APK
+      - name: Align and sign APK for installation testing
         run: |
+          set -euo pipefail
+
           RELEASE_TAG="${GITHUB_REF_NAME}"
           if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
             RELEASE_TAG="v0.0.1"
           fi
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk "finance-${RELEASE_TAG}-unsigned.apk"
-          echo "RELEASE_TAG=${RELEASE_TAG}" >> "${GITHUB_ENV}"
 
-      - name: Publish GitHub release
+          UNSIGNED="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          ALIGNED="${RUNNER_TEMP}/finance-${RELEASE_TAG}-aligned.apk"
+          SIGNED="finance-${RELEASE_TAG}-signed-debug.apk"
+          DEBUG_KEYSTORE="${HOME}/.android/debug.keystore"
+
+          if [ ! -f "${DEBUG_KEYSTORE}" ]; then
+            mkdir -p "${HOME}/.android"
+            keytool -genkeypair -v \
+              -keystore "${DEBUG_KEYSTORE}" \
+              -storepass android \
+              -keypass android \
+              -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+          ZIPALIGN="$(find "${ANDROID_HOME}/build-tools" -name zipalign -type f | sort -V | tail -n 1)"
+          APKSIGNER="$(find "${ANDROID_HOME}/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+
+          test -n "${ZIPALIGN}"
+          test -n "${APKSIGNER}"
+
+          "${ZIPALIGN}" -f -p 4 "${UNSIGNED}" "${ALIGNED}"
+          "${APKSIGNER}" sign \
+            --ks "${DEBUG_KEYSTORE}" \
+            --ks-key-alias androiddebugkey \
+            --ks-pass pass:android \
+            --key-pass pass:android \
+            --out "${SIGNED}" \
+            "${ALIGNED}"
+          "${APKSIGNER}" verify --verbose "${SIGNED}"
+
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> "${GITHUB_ENV}"
+          echo "RELEASE_ASSET=${SIGNED}" >> "${GITHUB_ENV}"
+
+      - name: Publish signed APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            echo "Release ${RELEASE_TAG} already exists; skipping publication."
-            exit 0
+            gh release upload "${RELEASE_TAG}" "${RELEASE_ASSET}" --clobber
+            gh release delete-asset "${RELEASE_TAG}" "finance-${RELEASE_TAG}-unsigned.apk" --yes || true
+          else
+            gh release create "${RELEASE_TAG}" "${RELEASE_ASSET}" \
+              --target "${GITHUB_SHA}" \
+              --title "Túi Nhỏ ${RELEASE_TAG}" \
+              --generate-notes
           fi
-          gh release create "${RELEASE_TAG}" "finance-${RELEASE_TAG}-unsigned.apk" \
-            --target "${GITHUB_SHA}" \
-            --title "Túi Nhỏ ${RELEASE_TAG}" \
-            --generate-notes
