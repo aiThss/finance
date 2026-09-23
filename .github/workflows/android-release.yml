@@ -1,0 +1,74 @@
+name: Android Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/') ||
+      (github.ref == 'refs/heads/main' &&
+       contains(github.event.head_commit.message, '[android-release]'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets and sync Capacitor
+        run: |
+          npm run build
+          npx cap sync android
+
+      - name: Build unsigned release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Prepare APK
+        run: |
+          RELEASE_TAG="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            RELEASE_TAG="v0.0.1"
+          fi
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk "finance-${RELEASE_TAG}-unsigned.apk"
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> "${GITHUB_ENV}"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; skipping publication."
+            exit 0
+          fi
+          gh release create "${RELEASE_TAG}" "finance-${RELEASE_TAG}-unsigned.apk" \
+            --target "${GITHUB_SHA}" \
+            --title "Túi Nhỏ ${RELEASE_TAG}" \
+            --generate-notes
