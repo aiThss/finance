@@ -1,16 +1,16 @@
 # Túi Nhỏ
 
-[![Download APK](https://img.shields.io/badge/Download-APK-3DDC84?logo=android&logoColor=white)](#download)
-[![Latest release](https://img.shields.io/github/v/release/aiThss/finance?display_name=tag&label=Latest%20release&logo=github)](#download)
+[![Download APK](https://img.shields.io/badge/Download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/aiThss/finance/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/aiThss/finance?display_name=tag&label=Latest%20release&logo=github)](https://github.com/aiThss/finance/releases/latest)
 
 Ứng dụng thu chi cá nhân tiếng Việt, ưu tiên điện thoại Android. React web → PWA → cùng bản build Vite trong Capacitor 8. Dữ liệu ở IndexedDB trên thiết bị, không đăng nhập và không đồng bộ đám mây.
 
 ## Download
 
-- [Download APK v0.0.1 (signed for testing)](https://github.com/aiThss/finance/releases/download/v0.0.1/finance-v0.0.1-signed-debug.apk)
-- [View release page and notes](https://github.com/aiThss/finance/releases/tag/v0.0.1)
+- [Tải APK mới nhất](https://github.com/aiThss/finance/releases/latest/download/tui-nho.apk)
+- [Trang download và ghi chú phiên bản](https://github.com/aiThss/finance/releases/latest)
 
-> APK này đã được ký bằng debug keystore để cài đặt và test. Muốn phát hành chính thức hoặc cập nhật lâu dài, cần ký bằng keystore release riêng.
+> Từ v1.0.1, APK dùng khóa release cố định. APK v0.0.1 dùng khóa debug khác: hãy xuất JSON trong Cài đặt trước khi chuyển bản. Android không cho cài đè khi khác chữ ký; chỉ gỡ bản cũ sau khi đã lưu bản sao lưu an toàn, rồi cài bản mới và nhập JSON. Các bản release tiếp theo dùng cùng khóa để cập nhật tại chỗ.
 
 ## Dùng được gì?
 
@@ -127,3 +127,6 @@ Safe-area CSS, resize khi bàn phím mở, Android back đóng sheet và hỏi k
 Bản sửa 23/09 dùng SystemBars của Capacitor để chừa vùng status bar, camera cutout và bàn phím trên Android; bỏ plugin StatusBar cũ và `resizeOnFullScreen`. Cần **build và cài APK mới**, redeploy Dokploy chỉ cập nhật web. Dùng cùng applicationId và khóa ký để nâng cấp tại chỗ; không gỡ app đang chứa dữ liệu.
 
 GitHub Actions `Verify` có job `android-build` tạo artifact `tui-nho-debug-apk` để kiểm tra biên dịch. Đây là bản debug, không thay thế APK release ký bằng khóa hiện tại. Khi phát hành, tăng versionCode và dùng quy trình ký release ở trên. Xác minh trên điện thoại: mở lạnh, mọi tab, xoay ngang, mở bàn phím, Back và đóng form; kiểm tra cả điều hướng cử chỉ và 3 nút.
+
+### Phát hành APK tự động
+Tăng version trong package.json/package-lock.json, tăng versionCode và versionName trong android/app/build.gradle, thêm docs/releases/vX.Y.Z.md rồi push tag vX.Y.Z. Workflow Android Release build cấu hình release, ký bằng hai GitHub Secrets ANDROID_RELEASE_KEYSTORE_BASE64 / ANDROID_RELEASE_KEYSTORE_PASSWORD và xuất APK cùng SHA-256 lên GitHub Releases. Không thay thế binary của phiên bản đã phát hành. Badge luôn mở releases/latest.
