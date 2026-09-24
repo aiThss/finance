@@ -255,3 +255,22 @@ for (const count of [1000, 5000, 10000]) {
     for (const ms of Object.values(metrics)) expect(ms).toBeLessThan(4000);
   });
 }
+
+test("option picker locks background scroll and dismisses on backdrop click", async ({
+  page,
+}) => {
+  await page.goto("/transactions");
+  const filter = page.locator(".filters .select-field").first();
+  await filter.click();
+  const backdrop = page.locator(".select-sheet-backdrop");
+  await expect(backdrop).toBeVisible();
+  expect(
+    await page.evaluate(() => document.body.style.overflow),
+  ).toBe("hidden");
+  // Click outside the bottom sheet content (in the backdrop area)
+  await backdrop.click({ position: { x: 50, y: 50 } });
+  await expect(backdrop).toHaveCount(0);
+  expect(
+    await page.evaluate(() => document.body.style.overflow),
+  ).not.toBe("hidden");
+});
