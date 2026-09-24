@@ -306,7 +306,11 @@ export function TransactionSheet({
           <div className="form-grid">
             <label>
               {type === "transfer" ? "Từ tài khoản" : "Tài khoản"}
-              <SelectField {...register("accountId")} required>
+              <SelectField
+                {...register("accountId")}
+                aria-label={type === "transfer" ? "Từ tài khoản" : "Tài khoản"}
+                required
+              >
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}
@@ -317,7 +321,11 @@ export function TransactionSheet({
             {type === "transfer" && (
               <label>
                 Đến tài khoản
-                <SelectField {...register("toAccountId")} required>
+                <SelectField
+                  {...register("toAccountId")}
+                  aria-label="Đến tài khoản"
+                  required
+                >
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}

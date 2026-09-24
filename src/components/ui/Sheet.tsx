@@ -41,6 +41,12 @@ export function Sheet({
     const pop = () => {
       if (closingRef.current) return;
       if (
+        !window.dispatchEvent(new Event("overlay:back", { cancelable: true }))
+      ) {
+        history.pushState({ ...previousState, sheet: true }, "");
+        return;
+      }
+      if (
         dirtyRef.current &&
         !window.confirm("Bạn có thay đổi chưa lưu. Bỏ thay đổi?")
       ) {

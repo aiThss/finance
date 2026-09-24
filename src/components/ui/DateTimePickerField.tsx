@@ -1,3 +1,4 @@
+import { TimeWheelDialog } from "./TimeWheelDialog";
 import { useState, useMemo, useRef, useId, useEffect, forwardRef } from "react";
 import {
   format,
@@ -57,6 +58,7 @@ export const DateTimePickerField = forwardRef<
   }, [value]);
 
   const [expanded, setExpanded] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState<Date>(startOfMonth(currentDate));
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pickerId = useId();
@@ -101,21 +103,6 @@ export const DateTimePickerField = forwardRef<
   const selectDay = (day: Date) => {
     const next = new Date(currentDate);
     next.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
-    emitChange(next);
-  };
-
-  // Thay đổi Giờ / Phút
-  const updateHours = (h: number) => {
-    const validH = Math.max(0, Math.min(23, isNaN(h) ? 0 : h));
-    const next = new Date(currentDate);
-    next.setHours(validH);
-    emitChange(next);
-  };
-
-  const updateMinutes = (m: number) => {
-    const validM = Math.max(0, Math.min(59, isNaN(m) ? 0 : m));
-    const next = new Date(currentDate);
-    next.setMinutes(validM);
     emitChange(next);
   };
 
@@ -281,29 +268,17 @@ export const DateTimePickerField = forwardRef<
               <Clock size={16} />
               Giờ
             </span>
-            <div className="time-inputs-row">
-              <input
-                aria-label="Giờ"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={23}
-                value={currentDate.getHours()}
-                onChange={(e) => updateHours(parseInt(e.target.value, 10))}
-              />
-              <span className="time-colon" aria-hidden="true">
-                :
-              </span>
-              <input
-                aria-label="Phút"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={59}
-                value={currentDate.getMinutes()}
-                onChange={(e) => updateMinutes(parseInt(e.target.value, 10))}
-              />
-            </div>
+            <button
+              type="button"
+              className="time-picker-trigger"
+              aria-haspopup="dialog"
+              aria-label={`Chọn giờ, ${formattedTimeLabel}`}
+              onClick={() => setTimeOpen(true)}
+            >
+              <span>{format(currentDate, "HH")}</span>
+              <span className="time-colon">:</span>
+              <span>{format(currentDate, "mm")}</span>
+            </button>
           </div>
           <details className="time-presets-disclosure">
             <summary>Chọn nhanh giờ</summary>
@@ -358,6 +333,17 @@ export const DateTimePickerField = forwardRef<
             </button>
           </div>
         </div>
+      )}
+      {timeOpen && (
+        <TimeWheelDialog
+          hours={currentDate.getHours()}
+          minutes={currentDate.getMinutes()}
+          onClose={() => setTimeOpen(false)}
+          onConfirm={(hours, minutes) => {
+            setPresetTime(hours, minutes);
+            setTimeOpen(false);
+          }}
+        />
       )}
     </div>
   );

@@ -72,8 +72,12 @@ export default function Transactions() {
       <div className="filters">
         <label>
           Loại
-          <SelectField value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="">Tất cả loại</option>
+          <SelectField
+            aria-label="Loại giao dịch"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="">Tất cả</option>
             {Object.entries(vi.types).map(([key, value]) => (
               <option key={key} value={key}>
                 {value}
@@ -82,12 +86,13 @@ export default function Transactions() {
           </SelectField>
         </label>
         <label>
-          Tài khoản
+          Ví
           <SelectField
+            aria-label="Ví tiền"
             value={account}
             onChange={(e) => setAccount(e.target.value)}
           >
-            <option value="">Tất cả ví</option>
+            <option value="">Tất cả</option>
             {data.accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
@@ -98,10 +103,11 @@ export default function Transactions() {
         <label>
           Danh mục
           <SelectField
+            aria-label="Danh mục"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            <option value="">Tất cả danh mục</option>
+            <option value="">Tất cả</option>
             {data.categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}

@@ -107,6 +107,10 @@ function Shell() {
     let disposed = false;
     void import("@capacitor/app").then(async ({ App }) => {
       const listener = await App.addListener("backButton", () => {
+        if (
+          !window.dispatchEvent(new Event("overlay:back", { cancelable: true }))
+        )
+          return;
         if (history.state?.sheet) history.back();
         else if (window.location.pathname !== "/") navigate(-1);
         else void App.minimizeApp();

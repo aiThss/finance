@@ -3,11 +3,10 @@ import {
   useRef,
   useId,
   useEffect,
+  useCallback,
   Children,
   isValidElement,
   type ComponentPropsWithRef,
-  type MouseEvent,
-  type TouchEvent,
 } from "react";
 import { ChevronDown, Check, X } from "lucide-react";
 
@@ -29,15 +28,22 @@ export function SelectField({
   const [open, setOpen] = useState(false);
   const selectRef = useRef<HTMLSelectElement>(null);
   const sheetId = useId();
+  const didPushRef = useRef(false);
 
-  // Trích xuất các option từ children
+  // Extract options from children
   const options: OptionData[] = [];
   Children.forEach(children, (child) => {
     if (isValidElement(child)) {
       const childProps = child.props as Record<string, unknown>;
       if (child.type === "option") {
-        const val = childProps.value !== undefined ? String(childProps.value) : String(childProps.children ?? "");
-        const lbl = childProps.children !== undefined ? String(childProps.children) : val;
+        const val =
+          childProps.value !== undefined
+            ? String(childProps.value)
+            : String(childProps.children ?? "");
+        const lbl =
+          childProps.children !== undefined
+            ? String(childProps.children)
+            : val;
         options.push({
           value: val,
           label: lbl,
@@ -47,8 +53,14 @@ export function SelectField({
         Children.forEach(childProps.children as React.ReactNode, (sub) => {
           if (isValidElement(sub) && sub.type === "option") {
             const subProps = sub.props as Record<string, unknown>;
-            const val = subProps.value !== undefined ? String(subProps.value) : String(subProps.children ?? "");
-            const lbl = subProps.children !== undefined ? String(subProps.children) : val;
+            const val =
+              subProps.value !== undefined
+                ? String(subProps.value)
+                : String(subProps.children ?? "");
+            const lbl =
+              subProps.children !== undefined
+                ? String(subProps.children)
+                : val;
             options.push({
               value: val,
               label: lbl,
@@ -60,7 +72,6 @@ export function SelectField({
     }
   });
 
-  // Giá trị hiện tại
   const [internalValue, setInternalValue] = useState<string>(
     value !== undefined
       ? String(value)
@@ -77,7 +88,36 @@ export function SelectField({
     }
   }, [value]);
 
-  const activeOption = options.find((o) => o.value === activeValue) ?? options[0];
+  const activeOption =
+    options.find((o) => o.value === activeValue) ?? options[0];
+
+  // Close sheet and optionally pop history
+  const closeSheet = useCallback((fromPopstate = false) => {
+    setOpen(false);
+    if (!fromPopstate && didPushRef.current) {
+      didPushRef.current = false;
+      history.back();
+    } else {
+      didPushRef.current = false;
+    }
+  }, []);
+
+  function openSheet() {
+    if (disabled) return;
+    setOpen(true);
+    history.pushState({ selectSheet: sheetId }, "");
+    didPushRef.current = true;
+  }
+
+  // Android/browser Back button closes sheet
+  useEffect(() => {
+    if (!open) return;
+    function handlePop() {
+      closeSheet(true);
+    }
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, [open, closeSheet]);
 
   function handleSelect(val: string) {
     setInternalValue(val);
@@ -86,61 +126,74 @@ export function SelectField({
       selectRef.current.dispatchEvent(new Event("change", { bubbles: true }));
       selectRef.current.dispatchEvent(new Event("input", { bubbles: true }));
     }
-    setOpen(false);
-  }
-
-  function handleOpenPicker(e: MouseEvent | TouchEvent) {
-    if (disabled) return;
-    // Ngăn chặn WebView Android kích hoạt popup native
-    e.preventDefault();
-    setOpen(true);
+    closeSheet();
   }
 
   return (
-    <>
-      <span
-        className={`select-field ${disabled ? "disabled" : ""} ${className}`}
-        onClick={handleOpenPicker}
+    // Wrapper span keeps the native <select> in DOM for Playwright/a11y
+    <span
+      className={`select-field ${disabled ? "disabled" : ""} ${className}`}
+    >
+      {/*
+       * Native <select>:
+       * – VISIBLE to Playwright (getByRole combobox, selectOption)
+       * – Positioned absolute, fully covering wrapper so a11y tree sees it
+       * – mousedown/touchstart prevented so the native OS picker never opens
+       * – onChange still fires so Playwright .selectOption() works correctly
+       * – Visual opacity=0, pointer-events handled via JS not CSS so events still reach it
+       */}
+      <select
+        ref={selectRef}
+        value={activeValue}
+        onChange={(e) => {
+          // Playwright's selectOption() dispatches change directly
+          const val = e.target.value;
+          setInternalValue(val);
+          onChange?.(e);
+        }}
+        disabled={disabled}
+        className="native-select-backing"
+        aria-label={String(props["aria-label"] ?? "")}
+        onMouseDown={(e) => {
+          // Block native OS picker; we show our custom sheet instead
+          if (!disabled) {
+            e.preventDefault();
+            openSheet();
+          }
+        }}
+        onTouchStart={(e) => {
+          if (!disabled) {
+            e.preventDefault();
+            openSheet();
+          }
+        }}
+        {...props}
       >
-        {/* Thẻ select ngầm phục vụ Playwright E2E, forms & accessibility */}
-        <select
-          ref={selectRef}
-          value={activeValue}
-          onChange={(e) => {
-            setInternalValue(e.target.value);
-            onChange?.(e);
-          }}
-          disabled={disabled}
-          className="native-select-backing"
-          onMouseDown={handleOpenPicker}
-          onTouchStart={handleOpenPicker}
-          {...props}
-        >
-          {children}
-        </select>
+        {children}
+      </select>
 
-        {/* Trigger hiển thị Liquid Glass sang trọng */}
-        <span className="select-visual-trigger" aria-hidden="true">
-          <span className="select-label-text">
-            {activeOption?.label || "Chọn…"}
-          </span>
-          <ChevronDown
-            size={18}
-            className={`select-chevron ${open ? "open" : ""}`}
-          />
+      {/* Visual Liquid Glass display layer (pointer-events: none — clicks fall through to <select>) */}
+      <span className="select-visual-trigger" aria-hidden="true">
+        <span className="select-label-text">
+          {activeOption?.label || "Chọn…"}
         </span>
+        <ChevronDown
+          size={16}
+          className={`select-chevron ${open ? "open" : ""}`}
+        />
       </span>
 
       {/* Liquid Glass Bottom Sheet Picker */}
       {open && (
         <div
           className="select-sheet-backdrop"
-          onClick={() => setOpen(false)}
+          onPointerDown={(e) => {
+            if (e.target === e.currentTarget) closeSheet();
+          }}
           role="presentation"
         >
           <div
             className="select-sheet-content"
-            onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             id={sheetId}
@@ -151,13 +204,16 @@ export function SelectField({
               <button
                 type="button"
                 className="select-sheet-close"
-                onClick={() => setOpen(false)}
+                onClick={() => closeSheet()}
                 aria-label="Đóng"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="select-sheet-options">
+            <div
+              className="select-sheet-options"
+              role="listbox"
+            >
               {options.map((opt) => {
                 const isSelected = opt.value === activeValue;
                 return (
@@ -166,10 +222,14 @@ export function SelectField({
                     key={opt.value}
                     disabled={opt.disabled}
                     className={`select-option-row ${isSelected ? "selected" : ""}`}
+                    role="option"
+                    aria-selected={isSelected}
                     onClick={() => handleSelect(opt.value)}
                   >
                     <span className="select-option-label">{opt.label}</span>
-                    <span className={`jewel-radio ${isSelected ? "active" : ""}`}>
+                    <span
+                      className={`jewel-radio ${isSelected ? "active" : ""}`}
+                    >
                       {isSelected && <Check size={14} strokeWidth={3} />}
                     </span>
                   </button>
@@ -179,6 +239,6 @@ export function SelectField({
           </div>
         </div>
       )}
-    </>
+    </span>
   );
 }

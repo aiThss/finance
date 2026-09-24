@@ -1,3 +1,4 @@
+import { watchApkUpdates } from "../lib/watch-apk-updates";
 import { useState, useEffect, useRef } from "react";
 import { Sparkles, Download, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { version } from "../../package.json";
@@ -27,27 +28,28 @@ export default function ApkAutoUpdateManager({
   const [downloadError, setDownloadError] = useState("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Tự động quét ngầm mỗi khi mở app (không giới hạn trần thời gian)
-  useEffect(() => {
-    if (!navigator.onLine) return;
-
-    let isMounted = true;
-    void checkApkUpdate(version)
-      .then((res) => {
-        if (!isMounted) return;
-        if (res.available) {
-          setNewVersion(res.version);
-          setDownloadUrl(res.url);
-        }
-      })
-      .catch(() => {
-        // Lỗi kiểm tra ngầm không làm phiền người dùng
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const offeredVersion = useRef<string | null>(null);
+  useEffect(
+    () =>
+      watchApkUpdates(
+        () => checkApkUpdate(version),
+        (result) => {
+          if (result.available) {
+            if (offeredVersion.current !== result.version)
+              setBannerDismissed(false);
+            offeredVersion.current = result.version;
+            setNewVersion(result.version);
+            setDownloadUrl(result.url);
+          } else {
+            offeredVersion.current = null;
+            setNewVersion(null);
+            setDownloadUrl(null);
+          }
+        },
+        true,
+      ),
+    [],
+  );
 
   async function startDownload() {
     if (!downloadUrl) return;
@@ -106,7 +108,7 @@ export default function ApkAutoUpdateManager({
           </div>
           <div className="apk-banner-text">
             <strong>Bản cập nhật v{newVersion}</strong>
-            <span>Giao diện mới & tối ưu trải nghiệm</span>
+            <span>Có phiên bản mới sẵn sàng để tải</span>
           </div>
           <div className="apk-banner-actions">
             <button
@@ -184,7 +186,10 @@ export default function ApkAutoUpdateManager({
                     type="button"
                     className="primary"
                     onClick={() =>
-                      triggerApkInstall(downloadBlob, `tui-nho-v${newVersion}.apk`)
+                      triggerApkInstall(
+                        downloadBlob,
+                        `tui-nho-v${newVersion}.apk`,
+                      )
                     }
                   >
                     <CheckCircle2 size={18} />
