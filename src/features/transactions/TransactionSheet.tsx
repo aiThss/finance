@@ -3,7 +3,7 @@ import { DateTimePickerField } from "../../components/ui/DateTimePickerField";
 import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { Trash2, Check } from "lucide-react";
+import { Trash2, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import { useApp, type Draft } from "../../app/context";
 import { Sheet, dismissSheet } from "../../components/ui/Sheet";
@@ -107,24 +107,31 @@ export function TransactionSheet({
     );
   const categoryId = watch("categoryId");
 
-  const appendZeros = (zeros: string) => {
-    const currentVal = (watch("amount") || "").trim();
-    if (!currentVal || currentVal === "0") {
-      setValue("amount", formatAmountInput(`1${zeros}`), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      return;
+  const currentAmount = watch("amount") || "";
+
+  const suggestions = useMemo(() => {
+    const trimmed = currentAmount.trim();
+    if (!trimmed || trimmed === "0") {
+      return [10000, 50000, 100000];
     }
-    let raw = currentVal;
-    try {
-      const parsed = parseMoney(currentVal);
-      raw = parsed.toString();
-    } catch {
-      raw = currentVal.replace(/\D/g, "");
+    const digitsOnly = trimmed.replace(/\D/g, "");
+    if (!digitsOnly) return [10000, 50000, 100000];
+
+    const n = parseInt(digitsOnly, 10);
+    if (isNaN(n) || n <= 0) return [10000, 50000, 100000];
+
+    if (n < 1000) {
+      return [n * 1000, n * 10000, n * 100000];
     }
-    const nextVal = `${raw}${zeros}`;
-    setValue("amount", formatAmountInput(nextVal), {
+    if (n < 1000000000) {
+      return [n, n * 10, n * 100];
+    }
+    return [n];
+  }, [currentAmount]);
+
+  const selectSuggestion = (amt: number) => {
+    const formatted = formatAmountInput(String(amt));
+    setValue("amount", formatted, {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -255,49 +262,34 @@ export function TransactionSheet({
                   },
                 })}
               />
+              {currentAmount && (
+                <button
+                  type="button"
+                  className="amount-clear-btn"
+                  onClick={clearAmount}
+                  aria-label="Xóa trắng"
+                  title="Xóa trắng"
+                >
+                  <X size={16} />
+                </button>
+              )}
               <span className="amount-unit">đ</span>
             </div>
             <div
-              className="quick-zeros-row"
+              className="quick-suggestions-grid"
               role="group"
-              aria-label="Phím số nhanh"
+              aria-label="Gợi ý số nhanh"
             >
-              <button
-                type="button"
-                className="quick-zero-btn"
-                onClick={() => appendZeros("00")}
-              >
-                +00
-              </button>
-              <button
-                type="button"
-                className="quick-zero-btn"
-                onClick={() => appendZeros("000")}
-              >
-                +000
-              </button>
-              <button
-                type="button"
-                className="quick-zero-btn"
-                onClick={() => appendZeros("0000")}
-              >
-                +0000
-              </button>
-              <button
-                type="button"
-                className="quick-zero-btn"
-                onClick={() => appendZeros("000000")}
-              >
-                +000.000
-              </button>
-              <button
-                type="button"
-                className="quick-zero-btn clear-btn"
-                onClick={clearAmount}
-                title="Xóa số tiền"
-              >
-                Xóa
-              </button>
+              {suggestions.map((amt) => (
+                <button
+                  type="button"
+                  key={amt}
+                  className="quick-suggest-btn"
+                  onClick={() => selectSuggestion(amt)}
+                >
+                  {formatAmountInput(String(amt))} đ
+                </button>
+              ))}
             </div>
           </div>
           <div className="form-grid">
