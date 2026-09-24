@@ -24,12 +24,27 @@ test("APK check offers official newer download, latest and network recovery", as
   );
   await page.goto("/settings");
   await page.getByRole("button", { name: "Kiểm tra cập nhật APK" }).click();
-  await expect(
-    page.getByRole("link", { name: "Tải APK 99.0.0" }),
-  ).toHaveAttribute(
-    "href",
+  await page.route(
+    "https://github.com/aiThss/finance/releases/download/**",
+    (route) =>
+      route.fulfill({
+        contentType: "application/vnd.android.package-archive",
+        headers: {
+          "content-disposition": 'attachment; filename="tui-nho.apk"',
+        },
+        body: "test APK",
+      }),
+  );
+  const downloadEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Tải APK 99.0.0" }).click();
+  const download = await downloadEvent;
+  expect(download.url()).toBe(
     "https://github.com/aiThss/finance/releases/download/v99.0.0/tui-nho.apk",
   );
+  expect(page.context().pages()).toHaveLength(1);
+  await expect(
+    page.getByText("Đã gửi yêu cầu tải APK.", { exact: true }),
+  ).toBeVisible();
   version = "1.0.0";
   await page.getByRole("button", { name: "Kiểm tra cập nhật APK" }).click();
   await expect(

@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(WindowAppearancePlugin.class);
         registerPlugin(LocalGeminiPlugin.class);
+        registerPlugin(ApkDownloadPlugin.class);
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         windowBackgroundColor = getPreferences(MODE_PRIVATE).getInt("windowBackground", windowBackgroundColor);

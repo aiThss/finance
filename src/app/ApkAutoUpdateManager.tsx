@@ -17,6 +17,8 @@ export default function ApkAutoUpdateManager({
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [downloadTriggered, setDownloadTriggered] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   const offeredVersion = useRef<string | null>(null);
   useEffect(
@@ -43,10 +45,19 @@ export default function ApkAutoUpdateManager({
     [],
   );
 
-  function handleStartDownload() {
-    if (!downloadUrl) return;
-    setDownloadTriggered(true);
-    openApkDownload(downloadUrl);
+  async function handleStartDownload() {
+    if (!downloadUrl || downloadBusy) return;
+    setDownloadBusy(true);
+    setDownloadError("");
+    try {
+      await openApkDownload(downloadUrl);
+      setDownloadTriggered(true);
+    } catch {
+      setDownloadTriggered(false);
+      setDownloadError("Chưa bắt đầu tải được APK. Vui lòng thử lại.");
+    } finally {
+      setDownloadBusy(false);
+    }
   }
 
   // Nếu không có bản mới, hoặc người dùng đã đóng, hoặc đang mở form giao dịch: không hiển thị
@@ -70,9 +81,12 @@ export default function ApkAutoUpdateManager({
           <span className="apk-version-badge">Mới</span>
         </div>
         <span className="apk-bottom-sub">
-          {downloadTriggered
-            ? "Đang tải xuống… Kiểm tra thanh thông báo để cài đặt"
-            : "Đã có bản cập nhật mới sẵn sàng (3.6 MB)"}
+          {downloadError ||
+            (downloadBusy
+              ? "Đang bắt đầu tải…"
+              : downloadTriggered
+                ? "Đã gửi yêu cầu tải. Kiểm tra thanh thông báo để cài đặt"
+                : "Đã có bản cập nhật mới sẵn sàng")}
         </span>
       </div>
 
@@ -83,6 +97,7 @@ export default function ApkAutoUpdateManager({
               type="button"
               className="apk-btn-compact-update secondary"
               onClick={handleStartDownload}
+              disabled={downloadBusy}
               title="Tải lại nếu chưa bắt đầu"
             >
               <RefreshCw size={13} style={{ marginRight: 4 }} />
@@ -104,6 +119,7 @@ export default function ApkAutoUpdateManager({
             type="button"
             className="apk-btn-compact-update"
             onClick={handleStartDownload}
+            disabled={downloadBusy}
           >
             Cập nhật
           </button>
@@ -120,7 +136,7 @@ export default function ApkAutoUpdateManager({
         </button>
       </div>
 
-      {downloadTriggered && <div className="apk-bottom-progress-bar" />}
+      {downloadBusy && <div className="apk-bottom-progress-bar" />}
     </aside>
   );
 }

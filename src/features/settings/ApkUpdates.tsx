@@ -14,11 +14,22 @@ export function ApkUpdates() {
     ReturnType<typeof checkApkUpdate>
   > | null>(null);
   const [downloadStarted, setDownloadStarted] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState(false);
 
-  function handleStartDownload() {
-    if (!update?.url) return;
-    setDownloadStarted(true);
-    openApkDownload(update.url);
+  async function handleStartDownload() {
+    if (!update?.url || downloadBusy) return;
+    setDownloadBusy(true);
+    setDownloadStarted(false);
+    setStatus("Đang bắt đầu tải APK…");
+    try {
+      await openApkDownload(update.url);
+      setDownloadStarted(true);
+      setStatus("Đã gửi yêu cầu tải APK.");
+    } catch {
+      setStatus("Chưa bắt đầu tải được APK. Vui lòng thử lại.");
+    } finally {
+      setDownloadBusy(false);
+    }
   }
 
   return (
@@ -28,7 +39,7 @@ export function ApkUpdates() {
         Phiên bản hiện tại: {version}. Kiểm tra bản Android mới trên GitHub.
       </p>
       <button
-        disabled={busy}
+        disabled={busy || downloadBusy}
         onClick={async () => {
           setBusy(true);
           setUpdate(null);
@@ -74,14 +85,19 @@ export function ApkUpdates() {
               type="button"
               className="primary"
               onClick={handleStartDownload}
+              disabled={downloadBusy}
             >
               <Sparkles size={16} />{" "}
-              {downloadStarted ? "Tải lại APK" : "Tải bản cập nhật"}
+              {downloadBusy
+                ? "Đang bắt đầu tải…"
+                : downloadStarted
+                  ? "Tải lại APK"
+                  : "Tải bản cập nhật"}
             </button>
-            <a
-              href={update.url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={handleStartDownload}
+              disabled={downloadBusy}
               className="button"
               style={{
                 display: "inline-flex",
@@ -92,11 +108,12 @@ export function ApkUpdates() {
               }}
             >
               <Download size={16} /> Tải APK {update.version}
-            </a>
+            </button>
           </div>
           {downloadStarted && (
             <p className="muted" style={{ margin: 0, color: "var(--accent)" }}>
-              ✓ Đã mở tiến trình tải. Vui lòng kiểm tra thanh thông báo Android để cài đặt khi tải xong.
+              ✓ Đã gửi yêu cầu tải. Kiểm tra thông báo tải xuống để mở APK khi
+              tải xong.
             </p>
           )}
         </div>

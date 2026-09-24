@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+
+const ApkDownload = registerPlugin<{
+  start(options: { url: string }): Promise<{ downloadId: string }>;
+}>("ApkDownload");
 
 export const releasesUrl = "https://github.com/aiThss/finance/releases/latest";
 const releaseSchema = z.object({
@@ -111,7 +115,11 @@ export async function downloadApk(
       chunks.push(value);
       loaded += value.length;
       if (total > 0 && onProgress) {
-        onProgress(Math.min(100, Math.round((loaded / total) * 100)), loaded, total);
+        onProgress(
+          Math.min(100, Math.round((loaded / total) * 100)),
+          loaded,
+          total,
+        );
       }
     }
   }
@@ -123,20 +131,14 @@ export async function downloadApk(
   return blob;
 }
 
-export function openApkDownload(url: string) {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      window.open(url, "_system");
-      return;
-    } catch {
-      window.location.assign(url);
-      return;
-    }
+export async function openApkDownload(url: string) {
+  if (Capacitor.getPlatform() === "android") {
+    await ApkDownload.start({ url });
+    return;
   }
   const a = document.createElement("a");
   a.href = url;
   a.download = "tui-nho.apk";
-  a.target = "_blank";
   a.rel = "noopener noreferrer";
   document.body.appendChild(a);
   a.click();
@@ -153,4 +155,3 @@ export function triggerApkInstall(blob: Blob, filename = "tui-nho.apk") {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
 }
-
