@@ -28,6 +28,7 @@ export function SelectField({
   const [open, setOpen] = useState(false);
   const selectRef = useRef<HTMLSelectElement>(null);
   const sheetId = useId();
+  const didPushRef = useRef(false);
   const backdropTouchRef = useRef(false);
 
   // Extract options from children
@@ -91,14 +92,23 @@ export function SelectField({
   const activeOption =
     options.find((o) => o.value === activeValue) ?? options[0];
 
-  const closeSheet = useCallback(() => {
+  // Close sheet and optionally pop history
+  const closeSheet = useCallback((fromPopstate = false) => {
     setOpen(false);
+    if (!fromPopstate && didPushRef.current) {
+      didPushRef.current = false;
+      history.back();
+    } else {
+      didPushRef.current = false;
+    }
   }, []);
 
-  function openSheet() {
+  const openSheet = useCallback(() => {
     if (disabled) return;
     setOpen(true);
-  }
+    history.pushState({ selectSheet: sheetId }, "");
+    didPushRef.current = true;
+  }, [disabled, sheetId]);
 
   // Lock body scroll while open so background cannot be scrolled or interacted with
   useEffect(() => {
@@ -110,9 +120,12 @@ export function SelectField({
     };
   }, [open]);
 
-  // Intercept Android back button & Escape key to close sheet safely
+  // Android/browser Back button and overlay:back close sheet safely
   useEffect(() => {
     if (!open) return;
+    function handlePop() {
+      closeSheet(true);
+    }
     function handleOverlayBack(e: Event) {
       e.preventDefault();
       closeSheet();
@@ -123,9 +136,11 @@ export function SelectField({
         closeSheet();
       }
     }
+    window.addEventListener("popstate", handlePop);
     window.addEventListener("overlay:back", handleOverlayBack);
     window.addEventListener("keydown", handleKeyDown);
     return () => {
+      window.removeEventListener("popstate", handlePop);
       window.removeEventListener("overlay:back", handleOverlayBack);
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -145,12 +160,18 @@ export function SelectField({
     // Wrapper span keeps the native <select> in DOM for Playwright/a11y
     <span
       className={`select-field ${disabled ? "disabled" : ""} ${className}`}
+      onClick={(e) => {
+        if (!disabled && e.target !== selectRef.current) {
+          e.preventDefault();
+          openSheet();
+        }
+      }}
     >
       {/*
        * Native <select>:
        * – VISIBLE to Playwright (getByRole combobox, selectOption)
        * – Positioned absolute, fully covering wrapper so a11y tree sees it
-       * – mousedown/touchstart prevented so the native OS picker never opens
+       * – mousedown/touchstart/click intercepted so the custom sheet opens
        * – onChange still fires so Playwright .selectOption() works correctly
        * – Visual opacity=0, pointer-events handled via JS not CSS so events still reach it
        */}
@@ -166,6 +187,12 @@ export function SelectField({
         disabled={disabled}
         className="native-select-backing"
         aria-label={String(props["aria-label"] ?? "")}
+        onClick={(e) => {
+          if (!disabled) {
+            e.preventDefault();
+            openSheet();
+          }
+        }}
         onMouseDown={(e) => {
           // Block native OS picker; we show our custom sheet instead
           if (!disabled) {
