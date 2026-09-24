@@ -29,7 +29,7 @@ export function SelectField({
   const selectRef = useRef<HTMLSelectElement>(null);
   const sheetId = useId();
   const didPushRef = useRef(false);
-  const backdropTouchRef = useRef(false);
+  const backdropPointerStartedRef = useRef(false);
 
   // Extract options from children
   const options: OptionData[] = [];
@@ -237,23 +237,27 @@ export function SelectField({
           className="select-sheet-backdrop"
           onPointerDown={(e) => {
             if (e.target === e.currentTarget) {
-              backdropTouchRef.current = true;
+              backdropPointerStartedRef.current = true;
             }
           }}
           onPointerUp={(e) => {
-            if (e.target === e.currentTarget && backdropTouchRef.current) {
+            if (e.target === e.currentTarget && backdropPointerStartedRef.current) {
               e.preventDefault();
               e.stopPropagation();
               closeSheet();
             }
-            backdropTouchRef.current = false;
+            backdropPointerStartedRef.current = false;
+          }}
+          onPointerCancel={() => {
+            backdropPointerStartedRef.current = false;
           }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
+            if (e.target === e.currentTarget && backdropPointerStartedRef.current) {
               e.preventDefault();
               e.stopPropagation();
               closeSheet();
             }
+            backdropPointerStartedRef.current = false;
           }}
           onTouchMove={(e) => {
             if (e.target === e.currentTarget) {
