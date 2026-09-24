@@ -206,6 +206,32 @@ try {
   await capture("launch");
   await tap("Khác");
   await tap("Cài đặt");
+  const settingsNodes = await nodes();
+  assert(
+    settingsNodes.some((n) =>
+      n.text?.includes("Che số dư trên các màn hình"),
+    ),
+    "Privacy label 'Che số dư trên các màn hình' missing in Settings",
+  );
+  assert(
+    !settingsNodes.some((n) => n.text === "Tiền tệ"),
+    "Field 'Tiền tệ' must be removed from Settings",
+  );
+  assert(
+    !settingsNodes.some((n) => n.text === "Ngôn ngữ"),
+    "Field 'Ngôn ngữ' must be removed from Settings",
+  );
+  const aiSection = settingsNodes.find((n) => n.text === "Trợ lý AI");
+  assert(aiSection, "Section 'Trợ lý AI' must be present in Settings");
+  const dataSection = settingsNodes.find(
+    (n) => n.text === "Dữ liệu của bạn",
+  );
+  if (dataSection) {
+    assert(
+      aiSection.rect[1] < dataSection.rect[1],
+      "Section 'Trợ lý AI' must be positioned before 'Dữ liệu của bạn'",
+    );
+  }
   await tap("Giao diện");
   await tap("Tối");
   await tap("Tổng quan");
