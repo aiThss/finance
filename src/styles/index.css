@@ -2710,4 +2710,332 @@ body:has(dialog[open]) .update-prompt {
   flex: 1;
 }
 
+/* ==========================================================================
+   Liquid Glass DateTimePicker Field
+   ========================================================================== */
+.form-field-group {
+  margin: 12px 0 16px;
+}
+.field-title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.datetime-picker-field {
+  position: relative;
+  width: 100%;
+}
+.datetime-display-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.12));
+  border-radius: 16px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.datetime-display-card:hover {
+  background: var(--surface-3, rgba(255, 255, 255, 0.09));
+  border-color: var(--primary, #10b981);
+}
+.datetime-display-card.active {
+  border-color: var(--primary, #10b981);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+  background: var(--surface-3, rgba(255, 255, 255, 0.09));
+}
+.datetime-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.datetime-sub-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.datetime-icon {
+  color: var(--primary, #10b981);
+  display: flex;
+  align-items: center;
+}
+.datetime-text {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-normal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.datetime-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong, rgba(255, 255, 255, 0.15));
+}
+.datetime-toggle-btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--surface-3, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.datetime-toggle-btn:hover {
+  color: var(--primary, #10b981);
+  border-color: var(--primary, #10b981);
+}
+.datetime-quick-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 1px 0;
+}
+.datetime-quick-row::-webkit-scrollbar {
+  display: none;
+}
+.datetime-chip {
+  flex: 1;
+  min-width: max-content;
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.datetime-chip:hover {
+  background: var(--surface-3, rgba(255, 255, 255, 0.1));
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.datetime-chip:active {
+  transform: scale(0.96);
+}
+.datetime-chip.chosen {
+  background: var(--primary, #10b981);
+  border-color: var(--primary, #10b981);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+.datetime-chip.now-chip {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+.datetime-chip.now-chip:hover {
+  color: var(--primary, #10b981);
+}
+
+/* Expanded Picker Panel */
+.datetime-expanded-panel {
+  background: var(--surface-1, #131a16);
+  border: 1.5px solid var(--border-strong, rgba(255, 255, 255, 0.14));
+  border-radius: 20px;
+  padding: 16px;
+  margin-top: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  animation: slideDownFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.calendar-section {
+  margin-bottom: 16px;
+}
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-normal);
+  text-transform: capitalize;
+}
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cal-nav-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.cal-weekday {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+.cal-day:hover:not(.empty) {
+  background: var(--surface-2, rgba(255, 255, 255, 0.08));
+}
+.cal-day.empty {
+  cursor: default;
+}
+.cal-day.is-today {
+  border-color: var(--primary, #10b981);
+  font-weight: 700;
+}
+.cal-day.selected {
+  background: var(--primary, #10b981) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+}
+.time-section {
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  padding-top: 14px;
+}
+.time-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.time-spinners {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.time-input-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.time-input-box input {
+  width: 64px;
+  padding: 6px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.15));
+  color: var(--text-normal);
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease;
+}
+.time-input-box input:focus {
+  border-color: var(--primary, #10b981);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+.time-unit-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.time-colon {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.time-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.time-preset-btn {
+  flex: 1 1 calc(50% - 4px);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 10px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.time-preset-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.datetime-panel-footer {
+  display: flex;
+}
+.datetime-done-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
 

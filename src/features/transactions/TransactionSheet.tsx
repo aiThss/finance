@@ -1,5 +1,6 @@
 import { SelectField } from "../../components/ui/SelectField";
-import { useMemo, useState } from "react";
+import { DateTimePickerField } from "../../components/ui/DateTimePickerField";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { Trash2, Check } from "lucide-react";
@@ -82,6 +83,10 @@ export function TransactionSheet({
       ),
     },
   });
+
+  useEffect(() => {
+    register("date", { required: true });
+  }, [register]);
   const categoryFrequency = useMemo(() => {
     const counts = new Map<string, number>();
     for (const t of data.transactions)
@@ -376,6 +381,19 @@ export function TransactionSheet({
               {...register("title")}
             />
           </label>
+          <div className="form-field-group">
+            <span className="field-title">Thời gian</span>
+            <DateTimePickerField
+              name="date"
+              value={watch("date")}
+              onChange={(newVal) =>
+                setValue("date", newVal, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+          </div>
           <details className="entry-details">
             <summary>Thêm chi tiết · ngày, ghi chú</summary>
             <label>
@@ -385,10 +403,6 @@ export function TransactionSheet({
                 maxLength={120}
                 {...register("merchant")}
               />
-            </label>
-            <label>
-              Thời gian
-              <input type="datetime-local" required {...register("date")} />
             </label>
             <label>
               Ghi chú
