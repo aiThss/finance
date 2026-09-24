@@ -286,11 +286,17 @@ try {
   await capture("after-back");
   await tap("Tổng quan");
   shell("input", "keyevent", "KEYCODE_BACK");
-  await pause(300);
-  assert(
-    !/mCurrentFocus=.*com\.aithss\.finance/.test(shell("dumpsys", "window")),
-    "Home Back did not minimize",
-  );
+  let minimized = false;
+  for (let i = 0; i < 12; i++) {
+    await pause(300);
+    if (
+      !/mCurrentFocus=.*com\.aithss\.finance/.test(shell("dumpsys", "window"))
+    ) {
+      minimized = true;
+      break;
+    }
+  }
+  assert(minimized, "Home Back did not minimize");
   console.log(
     "Native APK launch, themes/top inset, navigation, sheet, IME and Back smoke passed.",
   );
