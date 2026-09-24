@@ -49,8 +49,22 @@ function nodes() {
     );
 }
 async function find(label, exact = true) {
-  for (let i = 0; i < 12; i++) {
-    const matches = nodes().filter((n) =>
+  for (let i = 0; i < 24; i++) {
+    const currentNodes = nodes();
+    const anr = currentNodes.find(
+      (n) => n.text === "Wait" || n.text === "Close app",
+    );
+    if (anr?.rect) {
+      shell(
+        "input",
+        "tap",
+        String(Math.round((anr.rect[0] + anr.rect[2]) / 2)),
+        String(Math.round((anr.rect[1] + anr.rect[3]) / 2)),
+      );
+      await pause(600);
+      continue;
+    }
+    const matches = currentNodes.filter((n) =>
       [n.text, n["content-desc"]].some((t) =>
         exact ? t === label : t?.includes(label),
       ),
@@ -161,6 +175,7 @@ try {
     "1",
     "Emulator did not finish booting",
   );
+  shell("settings", "put", "secure", "anr_show_background", "0");
   if (process.argv[2]) adb("install", "-r", process.argv[2]);
   shell("am", "start", "-W", "-n", "com.aithss.finance/.MainActivity");
   await find("Tổng quan");
@@ -173,7 +188,9 @@ try {
   await checkTop("dark");
   await tap("Giao dịch");
   await find("Chưa có giao dịch ở đây");
+  await pause(600);
   shell("input", "keyevent", "KEYCODE_BACK");
+  await pause(600);
   await find("Tổng quan");
   await tap("Khác");
   await tap("Cài đặt");
