@@ -77,7 +77,8 @@ export default function Dashboard() {
         <Money value={totalBalance} className="hero-amount" />
         <div className="balance-foot">
           <span>
-            {activeAccounts(data.accounts).length} tài khoản đang dùng
+            {activeAccounts(data.accounts).length} tài khoản ·{" "}
+            {active(data.transactions).length} giao dịch
           </span>
           <Link to="/accounts" aria-label="Xem tài khoản">
             <ArrowUpRight size={22} />

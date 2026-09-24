@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
 import { useApp } from "../../app/context";
-import { dayKey, summary } from "../../domain/money";
+import { dayKey, monthKey, summary } from "../../domain/money";
 import { PageTitle, Empty, Money } from "../../components/ui/Common";
 import { TransactionRows } from "../../components/finance/TransactionRows";
 import { vi } from "../../locales/vi";
@@ -118,30 +118,55 @@ export default function Transactions() {
       </div>
       <details className="date-filter">
         <summary>Khoảng thời gian</summary>
-        <button
-          onClick={() => {
-            setFrom(
-              dayKey(
-                startOfWeek(new Date(), {
-                  weekStartsOn: data.settings.firstDay === "monday" ? 1 : 0,
-                }),
-              ),
-            );
-            setTo(dayKey(new Date()));
-            setPage(0);
-          }}
-        >
-          Tuần này
-        </button>{" "}
-        <button
-          onClick={() => {
-            setFrom("");
-            setTo("");
-            setPage(0);
-          }}
-        >
-          Tất cả ngày
-        </button>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          <button
+            type="button"
+            onClick={() => {
+              const today = dayKey(new Date());
+              setFrom(today);
+              setTo(today);
+              setPage(0);
+            }}
+          >
+            Hôm nay
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFrom(
+                dayKey(
+                  startOfWeek(new Date(), {
+                    weekStartsOn: data.settings.firstDay === "monday" ? 1 : 0,
+                  }),
+                ),
+              );
+              setTo(dayKey(new Date()));
+              setPage(0);
+            }}
+          >
+            Tuần này
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFrom(`${monthKey(new Date())}-01`);
+              setTo(dayKey(new Date()));
+              setPage(0);
+            }}
+          >
+            Tháng này
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFrom("");
+              setTo("");
+              setPage(0);
+            }}
+          >
+            Tất cả ngày
+          </button>
+        </div>
         <div className="form-grid">
           <label>
             Từ ngày
@@ -168,6 +193,26 @@ export default function Transactions() {
           <Money value={totals.expense} />
         </span>
       </div>
+      {(q || type || account || category || from || to) && (
+        <div style={{ textAlign: "right", margin: "-6px 0 10px" }}>
+          <button
+            type="button"
+            className="text-button"
+            style={{ fontSize: "0.85rem", padding: "4px 8px" }}
+            onClick={() => {
+              setQ("");
+              setType("");
+              setAccount("");
+              setCategory("");
+              setFrom("");
+              setTo("");
+              setPage(0);
+            }}
+          >
+            Đặt lại tất cả bộ lọc
+          </button>
+        </div>
+      )}
       {!items.length ? (
         <Empty
           title="Chưa có giao dịch ở đây"
