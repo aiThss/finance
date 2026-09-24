@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Check,
   RotateCcw,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface DateTimePickerFieldProps {
@@ -79,7 +80,11 @@ export const DateTimePickerField = forwardRef<
     else targetDay = subDays(now, 2);
 
     const next = new Date(currentDate);
-    next.setFullYear(targetDay.getFullYear(), targetDay.getMonth(), targetDay.getDate());
+    next.setFullYear(
+      targetDay.getFullYear(),
+      targetDay.getMonth(),
+      targetDay.getDate(),
+    );
     emitChange(next);
   };
 
@@ -121,7 +126,6 @@ export const DateTimePickerField = forwardRef<
     const end = endOfMonth(viewMonth);
     const days = eachDayOfInterval({ start, end });
 
-    // Thứ 2 = 1, Chủ nhật = 0 -> Đổi chuẩn sang Thứ 2 là cột 0, Chủ nhật là cột 6
     let firstDayIndex = getDay(start) - 1;
     if (firstDayIndex === -1) firstDayIndex = 6;
 
@@ -161,9 +165,9 @@ export const DateTimePickerField = forwardRef<
         readOnly
       />
 
-      {/* Thẻ hiển thị chính */}
+      {/* Thanh bar chính hiển thị gọn gàng 1 dòng (Compact Glass Bar) */}
       <div
-        className={`datetime-display-card ${expanded ? "active" : ""}`}
+        className={`datetime-compact-bar ${expanded ? "active" : ""}`}
         onClick={() => setExpanded(!expanded)}
         role="button"
         tabIndex={0}
@@ -176,71 +180,98 @@ export const DateTimePickerField = forwardRef<
           }
         }}
       >
-        <div className="datetime-meta">
-          <div className="datetime-sub-block">
-            <span className="datetime-icon">
-              <CalendarIcon size={16} />
-            </span>
-            <span className="datetime-text day-text">{formattedDayLabel}</span>
+        <div className="datetime-compact-content">
+          <div className="datetime-compact-icon">
+            <CalendarIcon size={16} />
           </div>
-          <div className="datetime-divider" />
-          <div className="datetime-sub-block">
-            <span className="datetime-icon">
-              <Clock size={15} />
-            </span>
-            <span className="datetime-text time-text">{formattedTimeLabel}</span>
+          <div className="datetime-compact-labels">
+            <span className="datetime-compact-day">{formattedDayLabel}</span>
+            <span className="datetime-compact-dot">·</span>
+            <span className="datetime-compact-time">{formattedTimeLabel}</span>
           </div>
         </div>
-        <button
-          type="button"
-          className="datetime-toggle-btn"
-          aria-label={expanded ? "Thu gọn ngày giờ" : "Tùy chỉnh ngày giờ"}
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded(!expanded);
-          }}
-        >
-          {expanded ? "Đóng" : "Chỉnh"}
-        </button>
+
+        <div className="datetime-compact-actions">
+          {!isTodayActive ? (
+            <button
+              type="button"
+              className="datetime-quick-pill"
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuickDay("today");
+              }}
+            >
+              Hôm nay
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="datetime-quick-pill"
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuickDay("yesterday");
+              }}
+            >
+              Hôm qua
+            </button>
+          )}
+
+          <button
+            type="button"
+            className={`datetime-action-btn ${expanded ? "active" : ""}`}
+            aria-label={expanded ? "Đóng chọn ngày giờ" : "Mở chọn ngày giờ"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
+          >
+            <SlidersHorizontal size={14} />
+            <span>{expanded ? "Đóng" : "Đổi"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Hàng nút chọn nhanh */}
-      <div className="datetime-quick-row" role="group" aria-label="Chọn nhanh mốc ngày">
-        <button
-          type="button"
-          className={`datetime-chip ${isTodayActive ? "chosen" : ""}`}
-          onClick={() => setQuickDay("today")}
-        >
-          Hôm nay
-        </button>
-        <button
-          type="button"
-          className={`datetime-chip ${isYesterdayActive ? "chosen" : ""}`}
-          onClick={() => setQuickDay("yesterday")}
-        >
-          Hôm qua
-        </button>
-        <button
-          type="button"
-          className={`datetime-chip ${is2DaysAgoActive ? "chosen" : ""}`}
-          onClick={() => setQuickDay("2daysAgo")}
-        >
-          Hôm kia
-        </button>
-        <button
-          type="button"
-          className="datetime-chip now-chip"
-          onClick={setExactNow}
-          title="Cập nhật giờ thực tế bây giờ"
-        >
-          <RotateCcw size={12} />
-          Bây giờ
-        </button>
-      </div>
-
-      {/* Panel điều chỉnh chi tiết (Mở rộng) */}
+      {/* Panel điều chỉnh chi tiết (Mở rộng trượt mượt mà) */}
       {expanded && (
         <div className="datetime-expanded-panel">
+          {/* Hàng nút chọn nhanh trong panel */}
+          <div
+            className="datetime-quick-row"
+            role="group"
+            aria-label="Chọn nhanh mốc ngày"
+          >
+            <button
+              type="button"
+              className={`datetime-chip ${isTodayActive ? "chosen" : ""}`}
+              onClick={() => setQuickDay("today")}
+            >
+              Hôm nay
+            </button>
+            <button
+              type="button"
+              className={`datetime-chip ${isYesterdayActive ? "chosen" : ""}`}
+              onClick={() => setQuickDay("yesterday")}
+            >
+              Hôm qua
+            </button>
+            <button
+              type="button"
+              className={`datetime-chip ${is2DaysAgoActive ? "chosen" : ""}`}
+              onClick={() => setQuickDay("2daysAgo")}
+            >
+              Hôm kia
+            </button>
+            <button
+              type="button"
+              className="datetime-chip now-chip"
+              onClick={setExactNow}
+              title="Cập nhật giờ thực tế bây giờ"
+            >
+              <RotateCcw size={12} />
+              Bây giờ
+            </button>
+          </div>
+
           {/* Lịch tháng */}
           <div className="calendar-section">
             <div className="calendar-header">
@@ -253,7 +284,7 @@ export const DateTimePickerField = forwardRef<
                 <ChevronLeft size={16} />
               </button>
               <span className="cal-month-title">
-                {format(viewMonth, "MMMM yyyy")}
+                Tháng {format(viewMonth, "M / yyyy")}
               </span>
               <button
                 type="button"
@@ -265,68 +296,76 @@ export const DateTimePickerField = forwardRef<
               </button>
             </div>
 
-            <div className="calendar-grid">
-              {WEEKDAYS.map((wd) => (
-                <div key={wd} className="cal-weekday">
-                  {wd}
+            <div className="calendar-grid-weekdays">
+              {WEEKDAYS.map((w) => (
+                <div key={w} className="cal-weekday">
+                  {w}
                 </div>
               ))}
+            </div>
+
+            <div className="calendar-grid-days">
               {calendarDays.blanks.map((_, i) => (
-                <div key={`blank-${i}`} className="cal-day empty" />
+                <div key={`blank-${i}`} className="cal-day-cell empty" />
               ))}
               {calendarDays.days.map((d) => {
                 const isSelected = isSameDay(d, currentDate);
-                const isCurToday = isToday(d);
+                const isCurrentToday = isToday(d);
                 return (
                   <button
                     key={d.toISOString()}
                     type="button"
-                    className={`cal-day ${isSelected ? "selected" : ""} ${
-                      isCurToday ? "is-today" : ""
-                    }`}
+                    className={`cal-day-btn ${isSelected ? "selected" : ""} ${isCurrentToday ? "today" : ""}`}
                     onClick={() => selectDay(d)}
                   >
-                    <span>{format(d, "d")}</span>
+                    {format(d, "d")}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Chọn giờ phút */}
+          {/* Chỉnh Giờ & Phút */}
           <div className="time-section">
-            <div className="time-header">
-              <Clock size={15} />
-              <span>Thời gian trong ngày</span>
+            <div className="time-section-title">
+              <Clock size={14} />
+              <span>Thời gian</span>
             </div>
-            <div className="time-spinners">
-              <div className="time-input-box">
+
+            <div className="time-inputs-row">
+              <div className="time-input-group">
+                <label htmlFor="time-hours-input">Giờ</label>
                 <input
+                  id="time-hours-input"
                   type="number"
                   min={0}
                   max={23}
-                  value={format(currentDate, "HH")}
+                  value={currentDate.getHours()}
                   onChange={(e) => updateHours(parseInt(e.target.value, 10))}
                   aria-label="Giờ"
                 />
-                <span className="time-unit-label">Giờ</span>
               </div>
               <span className="time-colon">:</span>
-              <div className="time-input-box">
+              <div className="time-input-group">
+                <label htmlFor="time-minutes-input">Phút</label>
                 <input
+                  id="time-minutes-input"
                   type="number"
                   min={0}
                   max={59}
-                  value={format(currentDate, "mm")}
+                  value={currentDate.getMinutes()}
                   onChange={(e) => updateMinutes(parseInt(e.target.value, 10))}
                   aria-label="Phút"
                 />
-                <span className="time-unit-label">Phút</span>
               </div>
             </div>
 
-            {/* Mốc giờ quen thuộc */}
-            <div className="time-presets">
+            {/* Mốc thời gian gợi ý nhanh */}
+            <div
+              className="time-presets-grid"
+              role="group"
+              aria-label="Mốc giờ gợi ý"
+            >
               <button
                 type="button"
                 className="time-preset-btn"
@@ -366,7 +405,7 @@ export const DateTimePickerField = forwardRef<
               onClick={() => setExpanded(false)}
             >
               <Check size={16} />
-              Áp dụng
+              Xong
             </button>
           </div>
         </div>

@@ -27,25 +27,14 @@ export default function ApkAutoUpdateManager({
   const [downloadError, setDownloadError] = useState("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Tự động quét ngầm khi mở app (tần suất tối thiểu 12 tiếng / lần)
+  // Tự động quét ngầm mỗi khi mở app (không giới hạn trần thời gian)
   useEffect(() => {
-    // Chỉ tự động quét trên app native Android hoặc khi có mạng
     if (!navigator.onLine) return;
-
-    const LAST_CHECK_KEY = "tui_nho_last_apk_check";
-    const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
-    const now = Date.now();
-    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
-
-    if (lastCheck && now - parseInt(lastCheck, 10) < TWELVE_HOURS) {
-      return;
-    }
 
     let isMounted = true;
     void checkApkUpdate(version)
       .then((res) => {
         if (!isMounted) return;
-        localStorage.setItem(LAST_CHECK_KEY, String(now));
         if (res.available) {
           setNewVersion(res.version);
           setDownloadUrl(res.url);

@@ -2739,71 +2739,99 @@ body:has(dialog[open]) .update-prompt {
   position: relative;
   width: 100%;
 }
-.datetime-display-card {
+.datetime-compact-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: var(--surface-2, rgba(255, 255, 255, 0.05));
   border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.12));
-  border-radius: 16px;
-  padding: 10px 14px;
+  border-radius: 12px;
+  padding: 6px 10px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  min-height: 40px;
 }
-.datetime-display-card:hover {
+.datetime-compact-bar:hover {
   background: var(--surface-3, rgba(255, 255, 255, 0.09));
   border-color: var(--primary, #10b981);
 }
-.datetime-display-card.active {
+.datetime-compact-bar.active {
   border-color: var(--primary, #10b981);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
   background: var(--surface-3, rgba(255, 255, 255, 0.09));
 }
-.datetime-meta {
+.datetime-compact-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
-.datetime-sub-block {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.datetime-icon {
+.datetime-compact-icon {
   color: var(--primary, #10b981);
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
-.datetime-text {
-  font-size: 0.9375rem;
+.datetime-compact-labels {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-normal);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.datetime-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border-strong, rgba(255, 255, 255, 0.15));
+.datetime-compact-dot {
+  color: var(--text-muted);
 }
-.datetime-toggle-btn {
-  padding: 4px 10px;
+.datetime-compact-time {
+  color: var(--primary, #10b981);
+}
+.datetime-compact-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.datetime-quick-pill {
+  padding: 3px 8px;
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 8px;
   background: var(--surface-3, rgba(255, 255, 255, 0.08));
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.datetime-toggle-btn:hover {
+.datetime-quick-pill:hover {
   color: var(--primary, #10b981);
   border-color: var(--primary, #10b981);
+  background: var(--surface-2);
+}
+.datetime-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--primary, #10b981);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.datetime-action-btn:hover,
+.datetime-action-btn.active {
+  background: var(--primary, #10b981);
+  color: #ffffff;
 }
 .datetime-quick-row {
   display: flex;

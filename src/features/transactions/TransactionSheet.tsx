@@ -215,7 +215,15 @@ export function TransactionSheet({
     <Sheet
       title={draft.id ? "Chi tiết giao dịch" : "Ghi một khoản mới"}
       onClose={onClose}
-      dirty={!clean && (isDirty || type !== (draft.type ?? "expense"))}
+      dirty={
+        !clean &&
+        (isDirty ||
+          Boolean(
+            currentAmount &&
+              currentAmount !== (draft.amountMinor?.toString() ?? ""),
+          ) ||
+          type !== (draft.type ?? "expense"))
+      }
     >
       {!accounts.length ? (
         <div className="empty">
@@ -258,7 +266,10 @@ export function TransactionSheet({
                   required: true,
                   onChange: (e) => {
                     const formatted = formatAmountInput(e.target.value);
-                    setValue("amount", formatted, { shouldValidate: true });
+                    setValue("amount", formatted, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
                   },
                 })}
               />

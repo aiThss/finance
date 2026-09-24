@@ -38,6 +38,23 @@ export function parseRelease(data: unknown, current: string) {
     url: expected,
   };
 }
+
+async function fetchFallbackVersion(current: string) {
+  const res = await fetch(
+    "https://raw.githubusercontent.com/aiThss/finance/main/package.json",
+    { cache: "no-store", signal: AbortSignal.timeout(10000) },
+  );
+  if (!res.ok) throw new Error("Fallback failed");
+  const pkg = (await res.json()) as { version?: string };
+  const remote = String(pkg.version || "").replace(/^v/, "");
+  if (!remote) throw new Error("Invalid remote version");
+  return {
+    version: remote,
+    available: newerVersion(remote, current),
+    url: `https://github.com/aiThss/finance/releases/download/v${remote}/tui-nho.apk`,
+  };
+}
+
 export async function checkApkUpdate(current: string) {
   if (!navigator.onLine)
     throw new Error("Bạn đang ngoại tuyến. Kết nối mạng rồi kiểm tra lại.");
@@ -49,10 +66,16 @@ export async function checkApkUpdate(current: string) {
       signal: AbortSignal.timeout(15000),
     },
   );
-  if (response.status === 403 || response.status === 429)
-    throw new Error(
-      "GitHub đang giới hạn lượt kiểm tra. Thử lại sau hoặc mở trang phát hành.",
-    );
+  // Nếu bị rate limit trần (403 hoặc 429) -> tự động fallback sang raw CDN không giới hạn
+  if (response.status === 403 || response.status === 429) {
+    try {
+      return await fetchFallbackVersion(current);
+    } catch {
+      throw new Error(
+        "GitHub đang giới hạn lượt kiểm tra. Thử lại sau hoặc mở trang phát hành.",
+      );
+    }
+  }
   if (!response.ok)
     throw new Error(
       "Chưa kiểm tra được bản mới. Thử lại sau hoặc mở trang phát hành.",

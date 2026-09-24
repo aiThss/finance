@@ -15,3 +15,5 @@ android/**/build/
 .impeccable/
 *.tsbuildinfo
 .idea/
+*.apk
+*.apk.sha256
