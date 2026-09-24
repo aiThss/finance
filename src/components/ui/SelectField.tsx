@@ -187,9 +187,7 @@ export function SelectField({
       {open && (
         <div
           className="select-sheet-backdrop"
-          onPointerDown={(e) => {
-            if (e.target === e.currentTarget) closeSheet();
-          }}
+          onClick={() => closeSheet()}
           role="presentation"
         >
           <div
@@ -197,6 +195,7 @@ export function SelectField({
             role="dialog"
             aria-modal="true"
             id={sheetId}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="select-sheet-handle" />
             <div className="select-sheet-header">
