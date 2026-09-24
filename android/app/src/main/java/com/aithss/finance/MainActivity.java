@@ -6,6 +6,9 @@ import android.content.res.Configuration;
 import androidx.activity.EdgeToEdge;
 
 public class MainActivity extends BridgeActivity {
+    static volatile boolean foreground = false;
+    @Override public void onResume() { super.onResume(); foreground = true; }
+    @Override public void onPause() { foreground = false; super.onPause(); }
     private int windowBackgroundColor = 0xff0a0e0c;
 
     @Override

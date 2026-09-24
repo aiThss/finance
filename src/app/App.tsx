@@ -24,8 +24,9 @@ import {
   Wallet,
   Settings,
   WifiOff,
-  BookOpen,
 } from "lucide-react";
+import { TuiNhoMark } from "../components/brand/TuiNhoMark";
+import { ApkUpdaterProvider } from "../hooks/useApkUpdater";
 import PwaUpdateManager from "./PwaUpdateManager";
 import ApkAutoUpdateManager from "./ApkAutoUpdateManager";
 import { FinanceScope, PrivacyProvider } from "../db/queries";
@@ -148,7 +149,7 @@ function Shell() {
       </a>
       <aside className="desktop-sidebar">
         <Link className="brand" to="/">
-          <BookOpen size={27} />
+          <TuiNhoMark size={27} />
           <span>Túi Nhỏ</span>
         </Link>
         <p>Gọn tiền. Nhẹ tâm.</p>
@@ -226,9 +227,11 @@ export default function App() {
   return (
     <ErrorBoundary>
       <PrivacyProvider>
-        <BrowserRouter>
-          <Shell />
-        </BrowserRouter>
+        <ApkUpdaterProvider>
+          <BrowserRouter>
+            <Shell />
+          </BrowserRouter>
+        </ApkUpdaterProvider>
       </PrivacyProvider>
     </ErrorBoundary>
   );

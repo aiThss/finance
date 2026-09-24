@@ -16,6 +16,7 @@ import type { Backup } from "../../domain/schema";
 import { downloadFile } from "../../lib/files";
 import { ErrorText, message, PageTitle } from "../../components/ui/Common";
 import { Sheet, dismissSheet } from "../../components/ui/Sheet";
+
 export default function Settings() {
   const { data, notify } = useApp();
   const [error, setError] = useState("");
@@ -24,6 +25,7 @@ export default function Settings() {
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const s = data.settings;
+
   async function patch(value: Partial<typeof s>) {
     try {
       await settingsRepository.save({ ...s, ...value });
@@ -31,6 +33,7 @@ export default function Settings() {
       setError(message(e));
     }
   }
+
   async function exportData(csv = false) {
     setBusy(true);
     try {
@@ -55,12 +58,15 @@ export default function Settings() {
       setBusy(false);
     }
   }
+
   return (
     <>
       <PageTitle
         title="Cài đặt"
         description="Tùy chỉnh ứng dụng và quản lý dữ liệu"
       />
+
+      {/* 1. Hiển thị */}
       <section className="settings-section">
         <h2>Hiển thị</h2>
         <label>
@@ -76,20 +82,6 @@ export default function Settings() {
             <option value="system">Theo thiết bị</option>
           </SelectField>
         </label>
-        <div className="form-grid">
-          <label>
-            Tiền tệ
-            <SelectField value="VND" disabled>
-              <option>VND</option>
-            </SelectField>
-          </label>
-          <label>
-            Ngôn ngữ
-            <SelectField value="vi" disabled>
-              <option value="vi">Tiếng Việt</option>
-            </SelectField>
-          </label>
-        </div>
         <label>
           Ngày đầu tuần
           <SelectField
@@ -104,7 +96,8 @@ export default function Settings() {
         </label>
         <label className="toggle-row">
           <span>
-            Ẩn số tiền<small>Che số dư và số tiền trên các màn hình.</small>
+            Che số dư trên các màn hình
+            <small>Ẩn số dư và số tiền nhạy cảm khi sử dụng ứng dụng.</small>
           </span>
           <input
             type="checkbox"
@@ -114,6 +107,84 @@ export default function Settings() {
           />
         </label>
       </section>
+
+      {/* 2. Trợ lý AI */}
+      <section className="settings-section">
+        <h2>Trợ lý AI</h2>
+        <label className="toggle-row">
+          <span>
+            Bật Gemini<small>AI là tùy chọn và cần kết nối internet.</small>
+          </span>
+          <input
+            type="checkbox"
+            role="switch"
+            checked={s.aiEnabled}
+            onChange={(e) =>
+              void patch({
+                aiEnabled: e.target.checked,
+                aiConsent: e.target.checked ? s.aiConsent : false,
+              })
+            }
+          />
+        </label>
+        <GeminiKeySettings />
+      </section>
+
+      {/* 3. Giao dịch định kỳ */}
+      <section className="settings-section">
+        <h2>Giao dịch định kỳ</h2>
+        <p>
+          Khoản định kỳ luôn cần bạn xác nhận thủ công khi đến hạn, không tự
+          động trừ tiền.
+        </p>
+      </section>
+
+      {/* 4. Túi Nhỏ / Phiên bản / Cập nhật */}
+      <ApkUpdates />
+
+      {import.meta.env.DEV && (
+        <>
+          <section className="settings-section">
+            <h2>
+              Dev <span className="muted">{version}</span>
+            </h2>
+            <button
+              onClick={async () => {
+                try {
+                  const { seedDemo } = await import("../../db/demo");
+                  await seedDemo();
+                  notify("Đã tạo dữ liệu minh họa");
+                } catch (e) {
+                  setError(message(e));
+                }
+              }}
+            >
+              Tạo dữ liệu demo (chỉ khi chưa có tài khoản)
+            </button>
+          </section>
+          <div className="button-stack">
+            {([1000, 5000, 10000] as const).map((count) => (
+              <button
+                key={count}
+                onClick={async () => {
+                  try {
+                    const { seedPerformance } =
+                      await import("../../db/seed-performance");
+                    await seedPerformance(count);
+                    notify(`Đã tạo ${count} giao dịch thử`);
+                  } catch (e) {
+                    setError(message(e));
+                  }
+                }}
+              >
+                Tạo {count.toLocaleString("vi-VN")} giao dịch thử (bộ nhớ trống)
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 5. Dữ liệu của bạn */}
       <section className="settings-section">
         <h2>Dữ liệu của bạn</h2>
         <p className="muted">
@@ -173,81 +244,9 @@ export default function Settings() {
           Yêu cầu lưu trữ bền vững
         </button>
       </section>
-      <section className="settings-section">
-        <h2>Trợ lý AI</h2>
-        <label className="toggle-row">
-          <span>
-            Bật Gemini<small>AI là tùy chọn và cần kết nối internet.</small>
-          </span>
-          <input
-            type="checkbox"
-            role="switch"
-            checked={s.aiEnabled}
-            onChange={(e) =>
-              void patch({
-                aiEnabled: e.target.checked,
-                aiConsent: e.target.checked ? s.aiConsent : false,
-              })
-            }
-          />
-        </label>
-        <GeminiKeySettings />
-      </section>
-      <section className="settings-section">
-        <h2>Giao dịch định kỳ</h2>
-        <p>
-          Khoản định kỳ luôn cần bạn xác nhận thủ công khi đến hạn, không tự
-          động trừ tiền.
-        </p>
-      </section>
-      <section className="settings-section">
-        <h2>
-          Túi Nhỏ <span className="muted">{version}</span>
-        </h2>
-        <p>Quản lý tài chính cá nhân tinh gọn, bảo mật & ngoại tuyến.</p>
-        <p className="muted">
-          Không quảng cáo. Không theo dõi. Dữ liệu chỉ nằm trên thiết bị của
-          bạn.
-        </p>
-        {import.meta.env.DEV && (
-          <button
-            onClick={async () => {
-              try {
-                const { seedDemo } = await import("../../db/demo");
-                await seedDemo();
-                notify("Đã tạo dữ liệu minh họa");
-              } catch (e) {
-                setError(message(e));
-              }
-            }}
-          >
-            Tạo dữ liệu demo (chỉ khi chưa có tài khoản)
-          </button>
-        )}
-      </section>
-      <ApkUpdates />
-      {import.meta.env.DEV && (
-        <div className="button-stack">
-          {([1000, 5000, 10000] as const).map((count) => (
-            <button
-              key={count}
-              onClick={async () => {
-                try {
-                  const { seedPerformance } =
-                    await import("../../db/seed-performance");
-                  await seedPerformance(count);
-                  notify(`Đã tạo ${count} giao dịch thử`);
-                } catch (e) {
-                  setError(message(e));
-                }
-              }}
-            >
-              Tạo {count.toLocaleString("vi-VN")} giao dịch thử (bộ nhớ trống)
-            </button>
-          ))}
-        </div>
-      )}
+
       <ErrorText error={error} />
+
       {backup && (
         <Sheet title="Xác nhận khôi phục" onClose={() => setBackup(null)}>
           <p className="notice">

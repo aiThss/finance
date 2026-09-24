@@ -7,7 +7,7 @@ export default defineConfig({
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
-      includeAssets: ["icon.svg"],
+      includeAssets: ["icon.svg", "favicon.ico", "apple-touch-icon.png"],
       manifest: {
         name: "Túi Nhỏ — Tài chính cá nhân",
         short_name: "Túi Nhỏ",

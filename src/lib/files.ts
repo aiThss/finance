@@ -10,7 +10,8 @@ export async function downloadFile(
       import("@capacitor/share"),
     ]);
     const file = await Filesystem.writeFile({
-      path: name,
+      path: `exports/${name}`,
+      recursive: true,
       data: content,
       directory: Directory.Cache,
       encoding: Encoding.UTF8,

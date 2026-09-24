@@ -1,1 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#171b19"/><path d="M152 128h190a24 24 0 0 1 24 24v232H176a40 40 0 0 1-40-40V152a24 24 0 0 1 16-24Z" fill="#c6dfac"/><path d="M188 128v256M232 216h88M232 268h60" fill="none" stroke="#28382b" stroke-width="20" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Nền tối bo góc -->
+  <rect width="512" height="512" rx="112" fill="#171b19"/>
+
+  <!-- Dây buộc miệng túi -->
+  <path
+    d="M188 148 C188 124 208 110 256 110 C304 110 324 124 324 148"
+    stroke="#c6dfac" stroke-width="22" stroke-linecap="round" fill="none"
+  />
+
+  <!-- Thân túi tiền — oval phình xuống dưới -->
+  <path
+    d="M156 152 C118 152 96 172 96 212 L96 330 C96 374 128 402 176 402 L336 402 C384 402 416 374 416 330 L416 212 C416 172 394 152 356 152 Z"
+    fill="#c6dfac"
+  />
+
+  <!-- Vạch ngang trang trí trên thân túi -->
+  <path
+    d="M136 200 L376 200"
+    stroke="#28382b" stroke-width="10" stroke-linecap="round" fill="none"
+  />
+
+  <!-- Ký hiệu ₫ cách điệu ở giữa -->
+  <text
+    x="256" y="322"
+    text-anchor="middle"
+    font-size="120"
+    font-weight="700"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fill="#28382b"
+  >₫</text>
+</svg>

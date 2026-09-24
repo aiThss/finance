@@ -1,135 +1,177 @@
+/**
+ * ApkUpdates — Section trong Settings để quản lý cập nhật APK.
+ *
+ * Dùng useApkUpdater() — cùng state với banner.
+ * Không có logic download/install riêng.
+ */
+import { RefreshCw } from "lucide-react";
+import { version as currentVersion } from "../../../package.json";
+import { checkApkUpdate } from "../../lib/apk-updates";
+import { useApkUpdater } from "../../hooks/useApkUpdater";
+import { PixelWavyProgress } from "../../components/ui/PixelWavyProgress";
 import { useState } from "react";
-import { RefreshCw, Download, Sparkles, ExternalLink } from "lucide-react";
-import { version } from "../../../package.json";
-import {
-  checkApkUpdate,
-  releasesUrl,
-  openApkDownload,
-} from "../../lib/apk-updates";
 
 export function ApkUpdates() {
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("");
-  const [update, setUpdate] = useState<Awaited<
-    ReturnType<typeof checkApkUpdate>
-  > | null>(null);
-  const [downloadStarted, setDownloadStarted] = useState(false);
-  const [downloadBusy, setDownloadBusy] = useState(false);
+  const { state, isAndroid, startDownload, triggerInstall, retry } = useApkUpdater();
+  const { phase, newVersion, percent, error } = state;
+  const [checkBusy, setCheckBusy] = useState(false);
+  const [checkError, setCheckError] = useState("");
 
-  async function handleStartDownload() {
-    if (!update?.url || downloadBusy) return;
-    setDownloadBusy(true);
-    setDownloadStarted(false);
-    setStatus("Đang bắt đầu tải APK…");
+  // Kiểm tra thủ công bản mới (chỉ khi idle/installed)
+  async function handleCheck() {
+    setCheckBusy(true);
+    setCheckError("");
     try {
-      await openApkDownload(update.url);
-      setDownloadStarted(true);
-      setStatus("Đã gửi yêu cầu tải APK.");
-    } catch {
-      setStatus("Chưa bắt đầu tải được APK. Vui lòng thử lại.");
+      await checkApkUpdate(currentVersion);
+      // watchApkUpdates sẽ cập nhật state tự động nếu có bản mới
+    } catch (e) {
+      setCheckError(
+        e instanceof Error && e.name !== "TypeError" && e.name !== "TimeoutError"
+          ? e.message
+          : "Không kết nối được GitHub. Kiểm tra mạng và thử lại.",
+      );
     } finally {
-      setDownloadBusy(false);
+      setCheckBusy(false);
     }
   }
 
+  // Nếu không phải Android, hiện bản hiện tại không có gì thêm
+  if (!isAndroid) {
+    return (
+      <section className="settings-section">
+        <h2>
+          Túi Nhỏ <span className="muted">{currentVersion}</span>
+        </h2>
+        <p>Quản lý tài chính cá nhân tinh gọn, bảo mật &amp; ngoại tuyến.</p>
+        <p className="muted">Không quảng cáo. Không theo dõi. Dữ liệu chỉ nằm trên thiết bị của bạn.</p>
+      </section>
+    );
+  }
+
+  function renderActionButton() {
+    switch (phase) {
+      case "available":
+        return (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void startDownload()}
+          >
+            <RefreshCw size={16} />
+            Tải bản cập nhật v{newVersion}
+          </button>
+        );
+      case "starting":
+      case "downloading":
+      case "paused":
+        return (
+          <button type="button" className="primary" disabled>
+            {phase === "paused"
+              ? "Đang chờ mạng…"
+              : percent != null
+                ? `Đang tải… ${percent}%`
+                : "Đang tải…"}
+          </button>
+        );
+      case "downloaded":
+        return (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void triggerInstall()}
+          >
+            Cập nhật ngay
+          </button>
+        );
+      case "installing":
+      case "needs_permission":
+        return (
+          <button type="button" className="primary" disabled>
+            Đang cài đặt…
+          </button>
+        );
+      case "installed":
+        return (
+          <p style={{ color: "var(--accent)", margin: 0 }}>
+            ✓ Đã cập nhật thành công!
+          </p>
+        );
+      case "failed":
+        return (
+          <button type="button" onClick={() => void retry()}>
+            <RefreshCw size={16} />
+            Thử lại
+          </button>
+        );
+      default:
+        return null;
+    }
+  }
+
+  const showCheckButton =
+    phase === "idle" || phase === "installed";
+
   return (
     <section className="settings-section">
-      <h2>Cập nhật APK</h2>
-      <p className="muted">
-        Phiên bản hiện tại: {version}. Kiểm tra bản Android mới trên GitHub.
-      </p>
-      <button
-        disabled={busy || downloadBusy}
-        onClick={async () => {
-          setBusy(true);
-          setUpdate(null);
-          setDownloadStarted(false);
-          setStatus("Đang kiểm tra bản mới…");
-          try {
-            const result = await checkApkUpdate(version);
-            setUpdate(result);
-            setStatus(
-              result.available
-                ? `Có phiên bản ${result.version} để tải.`
-                : "Bạn đang dùng phiên bản mới nhất.",
-            );
-          } catch (error) {
-            setStatus(
-              error instanceof Error &&
-                error.name !== "TypeError" &&
-                error.name !== "TimeoutError"
-                ? error.message
-                : "Không kết nối được GitHub. Kiểm tra mạng và thử lại.",
-            );
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <RefreshCw size={18} />
-        {busy ? "Đang kiểm tra…" : "Kiểm tra cập nhật APK"}
-      </button>
-      {status && <p role="status">{status}</p>}
+      <h2>
+        Túi Nhỏ <span className="muted">{currentVersion}</span>
+      </h2>
 
-      {update?.available && (
-        <div
-          style={{
-            marginTop: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              type="button"
-              className="primary"
-              onClick={handleStartDownload}
-              disabled={downloadBusy}
-            >
-              <Sparkles size={16} />{" "}
-              {downloadBusy
-                ? "Đang bắt đầu tải…"
-                : downloadStarted
-                  ? "Tải lại APK"
-                  : "Tải bản cập nhật"}
-            </button>
-            <button
-              type="button"
-              onClick={handleStartDownload}
-              disabled={downloadBusy}
-              className="button"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 14px",
-                textDecoration: "none",
-              }}
-            >
-              <Download size={16} /> Tải APK {update.version}
-            </button>
-          </div>
-          {downloadStarted && (
-            <p className="muted" style={{ margin: 0, color: "var(--accent)" }}>
-              ✓ Đã gửi yêu cầu tải. Kiểm tra thông báo tải xuống để mở APK khi
-              tải xong.
-            </p>
-          )}
+      {/* Thông tin phiên bản */}
+      {phase === "available" && newVersion && (
+        <p>
+          Phiên bản mới:{" "}
+          <strong style={{ color: "var(--accent)" }}>v{newVersion}</strong>
+        </p>
+      )}
+      {(phase === "idle" || phase === "installed") && (
+        <p className="muted">Bạn đang dùng phiên bản mới nhất.</p>
+      )}
+
+      {/* Progress bar khi đang tải */}
+      {(phase === "starting" || phase === "downloading" || phase === "paused") && (
+        <div style={{ marginBottom: 12 }}>
+          <PixelWavyProgress
+            percent={percent}
+            aria-label="Tiến độ tải cập nhật"
+          />
         </div>
       )}
 
-      <p className="muted">
-        Tải APK rồi mở tệp để Android xác nhận cập nhật. Giữ ứng dụng đang có để
-        bảo toàn dữ liệu.
-      </p>
-      <a href={releasesUrl} target="_blank" rel="noopener noreferrer">
-        <ExternalLink
-          size={14}
-          style={{ verticalAlign: "middle", marginRight: 4 }}
-        />
-        Mở trang phát hành
-      </a>
+      {/* Lỗi */}
+      {phase === "failed" && error && (
+        <p role="alert" style={{ color: "var(--danger)", fontSize: "0.875rem", margin: "4px 0 12px" }}>
+          {error}
+        </p>
+      )}
+
+      {/* Permission hint */}
+      {phase === "needs_permission" && (
+        <p className="muted" style={{ margin: "4px 0 12px" }}>
+          Vào Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Túi Nhỏ, rồi quay lại.
+        </p>
+      )}
+
+      <div className="button-stack" style={{ gap: 8 }}>
+        {renderActionButton()}
+
+        {showCheckButton && (
+          <button
+            type="button"
+            disabled={checkBusy}
+            onClick={() => void handleCheck()}
+          >
+            <RefreshCw size={16} />
+            {checkBusy ? "Đang kiểm tra…" : "Kiểm tra bản mới"}
+          </button>
+        )}
+      </div>
+
+      {checkError && (
+        <p role="status" className="muted" style={{ marginTop: 8, fontSize: "0.875rem" }}>
+          {checkError}
+        </p>
+      )}
     </section>
   );
 }

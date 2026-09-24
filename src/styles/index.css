@@ -2737,24 +2737,79 @@ body:has(dialog[open]) .update-prompt {
 }
 
 .apk-bottom-progress-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), #34d399, var(--accent));
-  background-size: 200% 100%;
-  animation: shimmer-bar 1.5s infinite linear;
+  /* Giữ lại class cũ không dùng nữa để không gây regression nếu có code cũ */
+  display: none;
 }
 
-@keyframes shimmer-bar {
-  0% {
-    background-position: 200% 0;
+/* ─── Worm progress bar ────────────────────────────── */
+.worm-progress-wrap {
+  width: 100%;
+  display: block;
+  line-height: 0;
+}
+
+.worm-progress-svg {
+  width: 100%;
+  height: 8px;
+  display: block;
+  overflow: visible;
+}
+
+/* Determinate: path tĩnh, clip theo % thật */
+.worm-path-det {
+  /* không animation nặng khi biết % */
+}
+
+/* Indeterminate: worm trượt qua lại */
+.worm-path-indet {
+  animation: worm-indet 1.6s ease-in-out infinite;
+}
+
+.worm-slide-clip {
+  animation: worm-clip-slide 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+}
+
+@keyframes worm-indet {
+  0%   { transform: translateX(-40%); }
+  50%  { transform: translateX(120%); }
+  100% { transform: translateX(-40%); }
+}
+
+@keyframes worm-clip-slide {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(250%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* "Đầu" worm nhẹ nhàng */
+.worm-head {
+  animation: worm-head-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes worm-head-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%       { opacity: 1; }
+}
+
+/* Trong banner — hiển thị ngay dưới title */
+.apk-worm-bar {
+  margin-top: 4px;
+}
+
+/* prefers-reduced-motion: tắt animation mạnh */
+@media (prefers-reduced-motion: reduce) {
+  .worm-path-indet,
+  .worm-slide-clip,
+  .worm-head {
+    animation: none;
   }
-  100% {
-    background-position: -200% 0;
+  .worm-path-indet {
+    transform: translateX(0);
+    opacity: 0.6;
   }
 }
+
 
 @keyframes pulse-glow {
   0%,

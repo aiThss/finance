@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  BookOpen,
   MoreVertical,
   Sun,
   Moon,
@@ -12,6 +11,7 @@ import {
   Trash2,
   ShieldCheck,
 } from "lucide-react";
+import { TuiNhoMark } from "../components/brand/TuiNhoMark";
 import { useAppActions } from "./context";
 import { useSettings, readSettings } from "../db/queries";
 import { settingsRepository } from "../db/repositories";
@@ -56,7 +56,7 @@ export function MobileHeader() {
   return (
     <header className="mobile-top">
       <Link to="/" className="brand">
-        <BookOpen size={21} />
+        <TuiNhoMark size={21} />
         Túi Nhỏ
       </Link>
 
