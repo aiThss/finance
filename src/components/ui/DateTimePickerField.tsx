@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, forwardRef } from "react";
+import { useState, useMemo, useRef, useId, useEffect, forwardRef } from "react";
 import {
   format,
   parseISO,
@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Check,
   RotateCcw,
-  SlidersHorizontal,
+  ChevronDown,
 } from "lucide-react";
 
 interface DateTimePickerFieldProps {
@@ -58,7 +58,12 @@ export const DateTimePickerField = forwardRef<
 
   const [expanded, setExpanded] = useState(false);
   const [viewMonth, setViewMonth] = useState<Date>(startOfMonth(currentDate));
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const pickerId = useId();
+  const closePicker = () => {
+    setExpanded(false);
+    triggerRef.current?.focus();
+  };
 
   // Đồng bộ viewMonth khi currentDate thay đổi
   useEffect(() => {
@@ -154,8 +159,7 @@ export const DateTimePickerField = forwardRef<
   const is2DaysAgoActive = isSameDay(currentDate, subDays(new Date(), 2));
 
   return (
-    <div className="datetime-picker-field" ref={containerRef}>
-      {/* Input ẩn để form tracking và accessibility */}
+    <div className={`datetime-picker-field ${expanded ? "is-expanded" : ""}`}>
       <input
         type="hidden"
         ref={ref}
@@ -164,245 +168,190 @@ export const DateTimePickerField = forwardRef<
         value={value ?? ""}
         readOnly
       />
-
-      {/* Thanh bar chính hiển thị gọn gàng 1 dòng (Compact Glass Bar) */}
-      <div
-        className={`datetime-compact-bar ${expanded ? "active" : ""}`}
-        onClick={() => setExpanded(!expanded)}
-        role="button"
-        tabIndex={0}
+      <button
+        ref={triggerRef}
+        type="button"
+        className="datetime-compact-bar"
         aria-expanded={expanded}
+        aria-controls={`${pickerId}-panel`}
         aria-label={`Thời gian giao dịch: ${formattedDayLabel} lúc ${formattedTimeLabel}`}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
+        onClick={() => setExpanded(!expanded)}
       >
-        <div className="datetime-compact-content">
-          <div className="datetime-compact-icon">
-            <CalendarIcon size={16} />
-          </div>
-          <div className="datetime-compact-labels">
-            <span className="datetime-compact-day">{formattedDayLabel}</span>
-            <span className="datetime-compact-dot">·</span>
-            <span className="datetime-compact-time">{formattedTimeLabel}</span>
-          </div>
-        </div>
+        <CalendarIcon size={18} className="datetime-compact-icon" />
+        <span className="datetime-compact-labels">
+          <span className="datetime-compact-day">{formattedDayLabel}</span>
+          <span className="datetime-compact-time">{formattedTimeLabel}</span>
+        </span>
+        <ChevronDown size={16} className="datetime-chevron" />
+      </button>
 
-        <div className="datetime-compact-actions">
-          {!isTodayActive ? (
-            <button
-              type="button"
-              className="datetime-quick-pill"
-              onClick={(e) => {
-                e.stopPropagation();
-                setQuickDay("today");
-              }}
-            >
-              Hôm nay
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="datetime-quick-pill"
-              onClick={(e) => {
-                e.stopPropagation();
-                setQuickDay("yesterday");
-              }}
-            >
-              Hôm qua
-            </button>
-          )}
-
-          <button
-            type="button"
-            className={`datetime-action-btn ${expanded ? "active" : ""}`}
-            aria-label={expanded ? "Đóng chọn ngày giờ" : "Mở chọn ngày giờ"}
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(!expanded);
-            }}
-          >
-            <SlidersHorizontal size={14} />
-            <span>{expanded ? "Đóng" : "Đổi"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Panel điều chỉnh chi tiết (Mở rộng trượt mượt mà) */}
       {expanded && (
-        <div className="datetime-expanded-panel">
-          {/* Hàng nút chọn nhanh trong panel */}
+        <div
+          id={`${pickerId}-panel`}
+          className="datetime-expanded-panel"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              closePicker();
+            }
+          }}
+        >
           <div
             className="datetime-quick-row"
             role="group"
             aria-label="Chọn nhanh mốc ngày"
           >
-            <button
-              type="button"
-              className={`datetime-chip ${isTodayActive ? "chosen" : ""}`}
-              onClick={() => setQuickDay("today")}
-            >
-              Hôm nay
-            </button>
-            <button
-              type="button"
-              className={`datetime-chip ${isYesterdayActive ? "chosen" : ""}`}
-              onClick={() => setQuickDay("yesterday")}
-            >
-              Hôm qua
-            </button>
-            <button
-              type="button"
-              className={`datetime-chip ${is2DaysAgoActive ? "chosen" : ""}`}
-              onClick={() => setQuickDay("2daysAgo")}
-            >
-              Hôm kia
-            </button>
-            <button
-              type="button"
-              className="datetime-chip now-chip"
-              onClick={setExactNow}
-              title="Cập nhật giờ thực tế bây giờ"
-            >
-              <RotateCcw size={12} />
-              Bây giờ
-            </button>
+            {(
+              [
+                ["today", "Hôm nay", isTodayActive],
+                ["yesterday", "Hôm qua", isYesterdayActive],
+                ["2daysAgo", "Hôm kia", is2DaysAgoActive],
+              ] as const
+            ).map(([day, label, active]) => (
+              <button
+                key={day}
+                type="button"
+                className="datetime-chip"
+                aria-pressed={active}
+                onClick={() => setQuickDay(day)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Lịch tháng */}
           <div className="calendar-section">
             <div className="calendar-header">
-              <button
-                type="button"
-                className="cal-nav-btn"
-                onClick={() => setViewMonth(subMonths(viewMonth, 1))}
-                aria-label="Tháng trước"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="cal-month-title">
-                Tháng {format(viewMonth, "M / yyyy")}
+              <span className="cal-month-title" aria-live="polite">
+                Tháng {format(viewMonth, "M · yyyy")}
               </span>
-              <button
-                type="button"
-                className="cal-nav-btn"
-                onClick={() => setViewMonth(addMonths(viewMonth, 1))}
-                aria-label="Tháng sau"
-              >
-                <ChevronRight size={16} />
-              </button>
+              <div className="calendar-navigation">
+                <button
+                  type="button"
+                  className="cal-nav-btn"
+                  onClick={() => setViewMonth(subMonths(viewMonth, 1))}
+                  aria-label="Tháng trước"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="cal-nav-btn"
+                  onClick={() => setViewMonth(addMonths(viewMonth, 1))}
+                  aria-label="Tháng sau"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
             </div>
-
-            <div className="calendar-grid-weekdays">
-              {WEEKDAYS.map((w) => (
-                <div key={w} className="cal-weekday">
-                  {w}
-                </div>
+            <div className="calendar-grid-weekdays" aria-hidden="true">
+              {WEEKDAYS.map((day) => (
+                <span key={day} className="cal-weekday">
+                  {day}
+                </span>
               ))}
             </div>
-
-            <div className="calendar-grid-days">
+            <div
+              className="calendar-grid-days"
+              role="group"
+              aria-label="Chọn ngày giao dịch"
+            >
               {calendarDays.blanks.map((_, i) => (
-                <div key={`blank-${i}`} className="cal-day-cell empty" />
+                <span key={`blank-${i}`} />
               ))}
-              {calendarDays.days.map((d) => {
-                const isSelected = isSameDay(d, currentDate);
-                const isCurrentToday = isToday(d);
-                return (
-                  <button
-                    key={d.toISOString()}
-                    type="button"
-                    className={`cal-day-btn ${isSelected ? "selected" : ""} ${isCurrentToday ? "today" : ""}`}
-                    onClick={() => selectDay(d)}
-                  >
-                    {format(d, "d")}
-                  </button>
-                );
-              })}
+              {calendarDays.days.map((day) => (
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  className="cal-day-btn"
+                  aria-label={`${VI_WEEKDAYS[getDay(day)]}, ${format(day, "dd/MM/yyyy")}`}
+                  aria-pressed={isSameDay(day, currentDate)}
+                  aria-current={isToday(day) ? "date" : undefined}
+                  onClick={() => selectDay(day)}
+                >
+                  {format(day, "d")}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Chỉnh Giờ & Phút */}
           <div className="time-section">
-            <div className="time-section-title">
-              <Clock size={14} />
-              <span>Thời gian</span>
-            </div>
-
+            <span className="time-section-title">
+              <Clock size={16} />
+              Giờ
+            </span>
             <div className="time-inputs-row">
-              <div className="time-input-group">
-                <label htmlFor="time-hours-input">Giờ</label>
-                <input
-                  id="time-hours-input"
-                  type="number"
-                  min={0}
-                  max={23}
-                  value={currentDate.getHours()}
-                  onChange={(e) => updateHours(parseInt(e.target.value, 10))}
-                  aria-label="Giờ"
-                />
-              </div>
-              <span className="time-colon">:</span>
-              <div className="time-input-group">
-                <label htmlFor="time-minutes-input">Phút</label>
-                <input
-                  id="time-minutes-input"
-                  type="number"
-                  min={0}
-                  max={59}
-                  value={currentDate.getMinutes()}
-                  onChange={(e) => updateMinutes(parseInt(e.target.value, 10))}
-                  aria-label="Phút"
-                />
-              </div>
+              <input
+                aria-label="Giờ"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={23}
+                value={currentDate.getHours()}
+                onChange={(e) => updateHours(parseInt(e.target.value, 10))}
+              />
+              <span className="time-colon" aria-hidden="true">
+                :
+              </span>
+              <input
+                aria-label="Phút"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={59}
+                value={currentDate.getMinutes()}
+                onChange={(e) => updateMinutes(parseInt(e.target.value, 10))}
+              />
             </div>
-
-            {/* Mốc thời gian gợi ý nhanh */}
+          </div>
+          <details className="time-presets-disclosure">
+            <summary>Chọn nhanh giờ</summary>
             <div
               className="time-presets-grid"
               role="group"
               aria-label="Mốc giờ gợi ý"
             >
-              <button
-                type="button"
-                className="time-preset-btn"
-                onClick={() => setPresetTime(8, 0)}
-              >
-                Sáng (08:00)
-              </button>
-              <button
-                type="button"
-                className="time-preset-btn"
-                onClick={() => setPresetTime(12, 30)}
-              >
-                Trưa (12:30)
-              </button>
-              <button
-                type="button"
-                className="time-preset-btn"
-                onClick={() => setPresetTime(18, 30)}
-              >
-                Tối (18:30)
-              </button>
-              <button
-                type="button"
-                className="time-preset-btn"
-                onClick={() => setPresetTime(21, 0)}
-              >
-                Đêm (21:00)
-              </button>
+              {(
+                [
+                  [8, 0, "Sáng"],
+                  [12, 30, "Trưa"],
+                  [18, 30, "Tối"],
+                  [21, 0, "Đêm"],
+                ] as const
+              ).map(([hours, minutes, label]) => (
+                <button
+                  key={label}
+                  type="button"
+                  className="time-preset-btn"
+                  aria-pressed={
+                    currentDate.getHours() === hours &&
+                    currentDate.getMinutes() === minutes
+                  }
+                  onClick={() => setPresetTime(hours, minutes)}
+                >
+                  {label}{" "}
+                  <span>
+                    {String(hours).padStart(2, "0")}:
+                    {String(minutes).padStart(2, "0")}
+                  </span>
+                </button>
+              ))}
             </div>
-          </div>
-
-          {/* Nút hoàn tất */}
+          </details>
           <div className="datetime-panel-footer">
             <button
               type="button"
-              className="primary datetime-done-btn"
-              onClick={() => setExpanded(false)}
+              className="datetime-now-btn"
+              onClick={setExactNow}
+            >
+              <RotateCcw size={14} />
+              Bây giờ
+            </button>
+            <button
+              type="button"
+              className="datetime-done-btn"
+              onClick={closePicker}
             >
               <Check size={16} />
               Xong

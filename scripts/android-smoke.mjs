@@ -28,9 +28,33 @@ const decode = (s) =>
     .replaceAll("&quot;", '"')
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">");
-function nodes() {
-  shell("uiautomator", "dump", "/sdcard/finance-smoke.xml");
-  const xml = shell("cat", "/sdcard/finance-smoke.xml");
+async function nodes() {
+  // Android can return a null accessibility root just after launch or navigation.
+  // Never read a stale dump, and retry acquisition before asserting UI content.
+  let xml;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    shell("rm", "-f", "/sdcard/finance-smoke.xml");
+    const result = shell("uiautomator", "dump", "/sdcard/finance-smoke.xml");
+    if (
+      !result.includes("ERROR") &&
+      shell(
+        "test",
+        "-s",
+        "/sdcard/finance-smoke.xml",
+        "&&",
+        "echo",
+        "ready",
+        "||",
+        "true",
+      ) === "ready"
+    ) {
+      xml = shell("cat", "/sdcard/finance-smoke.xml");
+      if (xml.includes("<hierarchy") && xml.includes("<node")) break;
+    }
+    xml = undefined;
+    await pause(500);
+  }
+  assert(xml, "Android accessibility tree unavailable after 5 attempts");
   fs.writeFileSync(`${dir}/latest-ui.xml`, xml);
   return [...xml.matchAll(/<node\s+([^>]+)>?/g)]
     .map((m) => {
@@ -50,7 +74,7 @@ function nodes() {
 }
 async function find(label, exact = true) {
   for (let i = 0; i < 24; i++) {
-    const currentNodes = nodes();
+    const currentNodes = await nodes();
     const anr = currentNodes.find(
       (n) => n.text === "Wait" || n.text === "Close app",
     );
@@ -200,7 +224,9 @@ try {
   await checkTop("light");
   await tap("Ví tiền");
   await tap("Thêm tài khoản");
-  const fields = nodes().filter((n) => n.class === "android.widget.EditText");
+  const fields = (await nodes()).filter(
+    (n) => n.class === "android.widget.EditText",
+  );
   assert(fields.length, "Account name input missing");
   const [x1, y1, x2, y2] = fields[0].rect;
   shell("input", "tap", String((x1 + x2) / 2), String((y1 + y2) / 2));
@@ -210,7 +236,9 @@ try {
   await tap("Thêm giao dịch");
   await find("Ghi một khoản mới");
   await capture("transaction-sheet");
-  const amount = nodes().find((n) => n.class === "android.widget.EditText");
+  const amount = (await nodes()).find(
+    (n) => n.class === "android.widget.EditText",
+  );
   assert(amount, "Amount input missing");
   shell(
     "input",
@@ -228,7 +256,7 @@ try {
   );
   let saveReachable = false;
   for (let attempt = 0; attempt < 6; attempt++) {
-    const current = nodes();
+    const current = await nodes();
     const web = current.find((n) => n.class === "android.webkit.WebView");
     assert(web, "Resized WebView missing with IME open");
     const save = current.find((n) => n.text === "Lưu giao dịch");
