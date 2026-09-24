@@ -5,6 +5,8 @@ import {
   saveLocalKey,
   hasLocalKey,
   removeLocalKey,
+  GEMINI_MODEL,
+  geminiError,
 } from "../features/ai/api/local-key";
 describe("official APK updates", () => {
   it("compares numeric versions and never offers a downgrade", () => {
@@ -50,6 +52,28 @@ describe("official APK updates", () => {
 describe("personal Gemini key and output", () => {
   afterEach(async () => {
     await removeLocalKey();
+  });
+  it("accepts long opaque auth keys with dots without weakening whitespace validation", async () => {
+    await saveLocalKey(`  AQ.${"test-only_".repeat(60)}.signature==  `);
+    expect(await hasLocalKey()).toBe(true);
+    for (const key of [
+      "short",
+      "AQ.invalid key with spaces",
+      `AQ.${"x".repeat(4096)}`,
+      "AQ.invalid\r\nheader-injection",
+    ]) {
+      await expect(saveLocalKey(key)).rejects.toThrow();
+    }
+  });
+  it("uses the high-throughput model and distinguishes permission, model and quota errors", () => {
+    expect(
+      interactionBody("parse-transaction", { text: "phở 55k" }).model,
+    ).toBe(GEMINI_MODEL);
+    expect(GEMINI_MODEL).toBe("gemini-3.5-flash-lite");
+    expect(geminiError(403).message).toContain("quyền");
+    expect(geminiError(404).message).toContain("Model");
+    expect(geminiError(429).message).toContain("hạn mức");
+    expect(geminiError(400).message).not.toContain("Key không hợp lệ");
   });
   it("keeps web credentials out of persistent storage", async () => {
     await saveLocalKey("test-only-personal-key-1234567890");

@@ -49,7 +49,7 @@ describe("Gemini proxy contract", () => {
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ draft });
-    expect(params.model).toBe("gemini-3.8-flash");
+    expect(params.model).toBe("gemini-3.5-flash-lite");
     expect(params.store).toBe(false);
     expect(params.generation_config.thinking_level).toBe("low");
     expect(res.headers.get("cache-control")).toBe("no-store");

@@ -61,8 +61,8 @@ public class LocalGeminiPlugin extends Plugin {
     @PluginMethod
     public void save(PluginCall call) {
         String key = call.getString("key", "").trim();
-        if (!key.matches("[A-Za-z0-9_-]{20,256}")) {
-            call.reject("API key không hợp lệ. Sao chép lại từ Google AI Studio."); return;
+        if (!key.matches("[\\x21-\\x7E]{20,4096}")) {
+            call.reject("Key bị thiếu hoặc chứa khoảng trắng/ký tự không hỗ trợ. Sao chép toàn bộ key từ Google AI Studio."); return;
         }
         worker.execute(() -> {
             try {
@@ -93,7 +93,7 @@ public class LocalGeminiPlugin extends Plugin {
             try {
                 String key = readKey();
                 if (key == null) { call.reject("Nhập Gemini API key của bạn trong Cài đặt trước."); return; }
-                String endpoint = check ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash" : "https://generativelanguage.googleapis.com/v1beta/interactions";
+                String endpoint = check ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite" : "https://generativelanguage.googleapis.com/v1beta/interactions";
                 connection = (HttpsURLConnection) new URL(endpoint).openConnection();
                 connection.setInstanceFollowRedirects(false);
                 connection.setConnectTimeout(10000);

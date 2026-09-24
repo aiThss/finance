@@ -36,6 +36,10 @@ export function GeminiKeySettings() {
         Dùng API key riêng để gửi yêu cầu trực tiếp đến Google. Chỉ nội dung bạn
         xác nhận mới được gửi; AI không tự sửa giao dịch.
       </p>
+      <p className="muted">
+        Model: Gemini 3.5 Flash-Lite · ưu tiên tốc độ và chi phí thấp. Hạn mức
+        do Google cấp theo project; các key trong cùng project dùng chung quota.
+      </p>
       <label>
         Gemini API key
         <input
@@ -78,7 +82,7 @@ export function GeminiKeySettings() {
             void action(async () => {
               await localGemini(null, new AbortController().signal, true);
               setStatus(
-                "Key hợp lệ, đã kết nối Google Gemini. Hạn mức phụ thuộc tài khoản của bạn.",
+                "Key hợp lệ, đã kết nối Gemini 3.5 Flash-Lite. Kiểm tra này chưa xác nhận quota tạo nội dung; hạn mức phụ thuộc project của bạn.",
               );
             })
           }

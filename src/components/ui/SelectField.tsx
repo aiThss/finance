@@ -41,9 +41,7 @@ export function SelectField({
             ? String(childProps.value)
             : String(childProps.children ?? "");
         const lbl =
-          childProps.children !== undefined
-            ? String(childProps.children)
-            : val;
+          childProps.children !== undefined ? String(childProps.children) : val;
         options.push({
           value: val,
           label: lbl,
@@ -58,9 +56,7 @@ export function SelectField({
                 ? String(subProps.value)
                 : String(subProps.children ?? "");
             const lbl =
-              subProps.children !== undefined
-                ? String(subProps.children)
-                : val;
+              subProps.children !== undefined ? String(subProps.children) : val;
             options.push({
               value: val,
               label: lbl,
@@ -77,7 +73,7 @@ export function SelectField({
       ? String(value)
       : defaultValue !== undefined
         ? String(defaultValue)
-        : options[0]?.value ?? "",
+        : (options[0]?.value ?? ""),
   );
 
   const activeValue = value !== undefined ? String(value) : internalValue;
@@ -208,14 +204,6 @@ export function SelectField({
           }}
           onPointerUp={(e) => {
             e.stopPropagation();
-            if (
-              e.target === e.currentTarget &&
-              backdropPointerStartedRef.current
-            ) {
-              e.preventDefault();
-              closeSheet();
-            }
-            backdropPointerStartedRef.current = false;
           }}
           onPointerCancel={(e) => {
             e.stopPropagation();

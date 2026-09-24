@@ -61,13 +61,14 @@ test("APK check offers official newer download, latest and network recovery", as
 test("personal key goes directly to Google, clears after reload, and is removable", async ({
   page,
 }) => {
-  const key = "test-only-personal-key-1234567890";
+  const key = `AQ.${"test-only-key_".repeat(40)}.signature==`;
   await page.route(
     "https://generativelanguage.googleapis.com/**",
     async (route) => {
       expect(route.request().headers()["x-goog-api-key"]).toBe(key);
       expect(route.request().url()).not.toContain(key);
-      await route.fulfill({ json: { name: "models/gemini-3.8-flash" } });
+      expect(route.request().url()).toContain("models/gemini-3.5-flash-lite");
+      await route.fulfill({ json: { name: "models/gemini-3.5-flash-lite" } });
     },
   );
   await page.goto("/settings");
@@ -106,6 +107,9 @@ test("personal Gemini creates only a reviewed draft and never calls the proxy", 
     "https://generativelanguage.googleapis.com/v1beta/interactions",
     (route) => {
       expect(route.request().postDataJSON().store).toBe(false);
+      expect(route.request().postDataJSON().model).toBe(
+        "gemini-3.5-flash-lite",
+      );
       return route.fulfill({
         json: {
           status: "completed",

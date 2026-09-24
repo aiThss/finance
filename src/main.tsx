@@ -8,6 +8,8 @@ import "@fontsource/be-vietnam-pro/latin-500.css";
 import "@fontsource/be-vietnam-pro/latin-600.css";
 import App from "./app/App";
 import "./styles/index.css";
+import { installTouchIntentGuard } from "./lib/touch-intent";
+installTouchIntentGuard();
 async function bootstrap() {
   // Older APKs registered the PWA worker. Retire only those registrations;
   // IndexedDB is untouched. Reload once if a legacy worker controls this load.

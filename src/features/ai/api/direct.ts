@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { aiDraftSchema } from "../schemas/draft";
-import { localGemini } from "./local-key";
+import { GEMINI_MODEL, localGemini } from "./local-key";
 
 export type AiKind = "parse-transaction" | "receipt" | "insights";
 const inputSchema = z.object({
@@ -42,7 +42,7 @@ export function interactionBody(kind: AiKind, payload: unknown) {
     throw new Error("Ảnh không hợp lệ.");
   const text = JSON.stringify({ ...input, image: undefined });
   return {
-    model: "gemini-3.8-flash",
+    model: GEMINI_MODEL,
     store: false,
     input:
       kind === "receipt"
