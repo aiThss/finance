@@ -28,7 +28,6 @@ export function SelectField({
   const [open, setOpen] = useState(false);
   const selectRef = useRef<HTMLSelectElement>(null);
   const sheetId = useId();
-  const didPushRef = useRef(false);
   const backdropPointerStartedRef = useRef(false);
 
   // Extract options from children
@@ -92,23 +91,15 @@ export function SelectField({
   const activeOption =
     options.find((o) => o.value === activeValue) ?? options[0];
 
-  // Close sheet and optionally pop history
-  const closeSheet = useCallback((fromPopstate = false) => {
+  // Close sheet safely without touching browser history (prevents closing parent sheets)
+  const closeSheet = useCallback(() => {
     setOpen(false);
-    if (!fromPopstate && didPushRef.current) {
-      didPushRef.current = false;
-      history.back();
-    } else {
-      didPushRef.current = false;
-    }
   }, []);
 
   const openSheet = useCallback(() => {
     if (disabled) return;
     setOpen(true);
-    history.pushState({ selectSheet: sheetId }, "");
-    didPushRef.current = true;
-  }, [disabled, sheetId]);
+  }, [disabled]);
 
   // Lock body scroll while open so background cannot be scrolled or interacted with
   useEffect(() => {
@@ -120,12 +111,9 @@ export function SelectField({
     };
   }, [open]);
 
-  // Android/browser Back button and overlay:back close sheet safely
+  // Android back button and overlay:back close sheet safely without affecting history
   useEffect(() => {
     if (!open) return;
-    function handlePop() {
-      closeSheet(true);
-    }
     function handleOverlayBack(e: Event) {
       e.preventDefault();
       closeSheet();
@@ -136,11 +124,9 @@ export function SelectField({
         closeSheet();
       }
     }
-    window.addEventListener("popstate", handlePop);
     window.addEventListener("overlay:back", handleOverlayBack);
     window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("popstate", handlePop);
       window.removeEventListener("overlay:back", handleOverlayBack);
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -157,29 +143,26 @@ export function SelectField({
   }
 
   return (
-    // Wrapper span keeps the native <select> in DOM for Playwright/a11y
     <span
       className={`select-field ${disabled ? "disabled" : ""} ${className}`}
       onClick={(e) => {
-        if (!disabled && e.target !== selectRef.current) {
+        if (!disabled) {
           e.preventDefault();
+          e.stopPropagation();
           openSheet();
         }
       }}
     >
       {/*
        * Native <select>:
-       * – VISIBLE to Playwright (getByRole combobox, selectOption)
-       * – Positioned absolute, fully covering wrapper so a11y tree sees it
-       * – mousedown/touchstart/click intercepted so the custom sheet opens
-       * – onChange still fires so Playwright .selectOption() works correctly
-       * – Visual opacity=0, pointer-events handled via JS not CSS so events still reach it
+       * – Present in DOM for Playwright (getByRole combobox, selectOption) and screen readers
+       * – Positioned absolute with pointer-events: none in CSS so touches cleanly target .select-field
+       * – Keyboard navigation handled via onKeyDown
        */}
       <select
         ref={selectRef}
         value={activeValue}
         onChange={(e) => {
-          // Playwright's selectOption() dispatches change directly
           const val = e.target.value;
           setInternalValue(val);
           onChange?.(e);
@@ -187,25 +170,7 @@ export function SelectField({
         disabled={disabled}
         className="native-select-backing"
         aria-label={String(props["aria-label"] ?? "")}
-        onClick={(e) => {
-          if (!disabled) {
-            e.preventDefault();
-            openSheet();
-          }
-        }}
-        onMouseDown={(e) => {
-          // Block native OS picker; we show our custom sheet instead
-          if (!disabled) {
-            e.preventDefault();
-            openSheet();
-          }
-        }}
-        onTouchStart={(e) => {
-          if (!disabled) {
-            e.preventDefault();
-            openSheet();
-          }
-        }}
+        tabIndex={0}
         onKeyDown={(e) => {
           if (
             !disabled &&
@@ -220,7 +185,7 @@ export function SelectField({
         {children}
       </select>
 
-      {/* Visual Liquid Glass display layer (pointer-events: none — clicks fall through to <select>) */}
+      {/* Visual Liquid Glass display layer */}
       <span className="select-visual-trigger" aria-hidden="true">
         <span className="select-label-text">
           {activeOption?.label || "Chọn…"}
@@ -236,25 +201,33 @@ export function SelectField({
         <div
           className="select-sheet-backdrop"
           onPointerDown={(e) => {
+            e.stopPropagation();
             if (e.target === e.currentTarget) {
               backdropPointerStartedRef.current = true;
             }
           }}
           onPointerUp={(e) => {
-            if (e.target === e.currentTarget && backdropPointerStartedRef.current) {
+            e.stopPropagation();
+            if (
+              e.target === e.currentTarget &&
+              backdropPointerStartedRef.current
+            ) {
               e.preventDefault();
-              e.stopPropagation();
               closeSheet();
             }
             backdropPointerStartedRef.current = false;
           }}
-          onPointerCancel={() => {
+          onPointerCancel={(e) => {
+            e.stopPropagation();
             backdropPointerStartedRef.current = false;
           }}
           onClick={(e) => {
-            if (e.target === e.currentTarget && backdropPointerStartedRef.current) {
-              e.preventDefault();
-              e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
+            if (
+              e.target === e.currentTarget &&
+              backdropPointerStartedRef.current
+            ) {
               closeSheet();
             }
             backdropPointerStartedRef.current = false;
@@ -273,6 +246,7 @@ export function SelectField({
             id={sheetId}
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
           >
             <div className="select-sheet-handle" />
             <div className="select-sheet-header">
@@ -280,7 +254,11 @@ export function SelectField({
               <button
                 type="button"
                 className="select-sheet-close"
-                onClick={() => closeSheet()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeSheet();
+                }}
                 aria-label="Đóng"
               >
                 <X size={18} />
@@ -289,6 +267,9 @@ export function SelectField({
             <div
               className="select-sheet-options"
               role="listbox"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
             >
               {options.map((opt) => {
                 const isSelected = opt.value === activeValue;
@@ -300,7 +281,11 @@ export function SelectField({
                     className={`select-option-row ${isSelected ? "selected" : ""}`}
                     role="option"
                     aria-selected={isSelected}
-                    onClick={() => handleSelect(opt.value)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSelect(opt.value);
+                    }}
                   >
                     <span className="select-option-label">{opt.label}</span>
                     <span

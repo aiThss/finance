@@ -1375,19 +1375,24 @@ legend {
 }
 .filters {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 .filters label {
-  flex: 1;
-  min-width: 88px;
-  font-size: 0.875rem;
-  margin: 5px 0;
+  flex: 1 1 0px;
+  min-width: 0;
+  font-size: 0.8125rem;
+  margin: 4px 0;
 }
 .filters select {
-  font-size: 0.875rem;
-  padding: 10px 7px;
-  min-height: 44px;
+  font-size: 0.8125rem;
+  padding: 8px 6px;
+  min-height: 40px;
+}
+.filters .select-visual-trigger {
+  padding: 8px 8px;
+  min-height: 40px;
+  gap: 4px;
 }
 .date-filter {
   margin: 14px 0;
@@ -1454,6 +1459,7 @@ summary {
   justify-content: flex-start;
   cursor: pointer;
   outline: none;
+  touch-action: pan-y;
   transition: opacity 140ms ease;
 }
 .account-main:focus {
@@ -1480,31 +1486,43 @@ summary {
 }
 .account-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-wrap: nowrap;
+  gap: 6px;
   justify-content: flex-end;
+  align-items: center;
   border-top: 1px solid var(--border);
   padding-top: 8px;
+  white-space: nowrap;
 }
 .account-actions button {
-  font-size: 0.875rem;
-  background: transparent;
-  border: 0;
-  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 8px;
   border-radius: var(--radius-sm);
   outline: none;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background-color 140ms ease;
+  touch-action: pan-y;
 }
 .account-actions button:focus {
   outline: none !important;
 }
 .account-actions button:active {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
   outline: none !important;
 }
+:root[data-theme="light"] .account-actions button {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
 :root[data-theme="light"] .account-actions button:active {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.07);
 }
 .menu-row {
   width: 100%;
@@ -2340,14 +2358,15 @@ body:has(dialog[open]) .update-prompt {
   min-width: 0;
   width: 100%;
   cursor: pointer;
+  touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
 }
 .select-field:focus-within .select-visual-trigger {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-/* Native select: invisible layer on top so mousedown/touchstart are intercepted.
-   pointer-events: auto so JS events fire; visual opacity 0. */
+/* Native select: kept in DOM for Playwright and screen readers.
+   pointer-events: none lets touches cleanly trigger custom Liquid Glass sheet on .select-field */
 .native-select-backing {
   position: absolute;
   inset: 0;
@@ -2356,12 +2375,12 @@ body:has(dialog[open]) .update-prompt {
   opacity: 0;
   appearance: none;
   -webkit-appearance: none;
-  cursor: pointer;
+  pointer-events: none;
   z-index: 2;
   /* Prevent text-decoration flash on tap */
   text-decoration-line: none;
 }
-/* Visual layer sits below native select; pointer-events: none lets clicks reach it */
+/* Visual layer display */
 .select-visual-trigger {
   display: flex;
   align-items: center;

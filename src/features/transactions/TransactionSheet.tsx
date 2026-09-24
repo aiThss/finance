@@ -65,7 +65,9 @@ export function TransactionSheet({
     formState: { isDirty },
   } = useForm<FormValues>({
     defaultValues: {
-      amount: draft.amountMinor?.toString() ?? "",
+      amount: draft.amountMinor
+        ? formatAmountInput(String(draft.amountMinor))
+        : "",
       accountId:
         draft.accountId ??
         draft.fromAccountId ??

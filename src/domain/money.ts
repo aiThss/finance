@@ -46,12 +46,12 @@ export function formatAmountInput(input: string): string {
   return isNegative ? `-${formatted}` : formatted;
 }
 
-export const money = (n: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(n);
+export const money = (n: number) => {
+  const isNegative = n < 0;
+  const abs = Math.abs(Math.round(n));
+  const formatted = abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${isNegative ? "-" : ""}${formatted}\u00a0₫`;
+};
 export const monthKey = (date: string | Date) =>
   format(typeof date === "string" ? parseISO(date) : date, "yyyy-MM");
 export const dayKey = (date: string | Date) =>

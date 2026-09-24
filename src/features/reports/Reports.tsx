@@ -266,7 +266,7 @@ export default function Reports() {
                 value={historyAccount}
                 onChange={(e) => setHistoryAccount(e.target.value)}
               >
-                <option value="">Tất cả tài khoản</option>
+                <option value="">Tất cả</option>
                 {data.accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}

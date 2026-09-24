@@ -182,7 +182,7 @@ test("AI draft needs explicit review and save", async ({ page }) => {
     .getByRole("button", { name: "Kiểm tra & chỉnh sửa trước khi lưu" })
     .click();
   await expect(page.getByRole("dialog").getByLabel("Số tiền")).toHaveValue(
-    "55000",
+    "55.000",
   );
   await page
     .getByRole("button", { name: "Lưu giao dịch", exact: true })

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Plus, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useApp } from "../../app/context";
-import { dayKey, parseMoney } from "../../domain/money";
+import { dayKey, parseMoney, formatAmountInput } from "../../domain/money";
 import { recurringRepository, uid } from "../../db/repositories";
 import type { RecurringRule } from "../../domain/schema";
 import {
@@ -38,7 +38,11 @@ export default function Recurring() {
         },
       },
     );
-    setAmount(r?.transactionTemplate.amountMinor.toString() ?? "");
+    setAmount(
+      r?.transactionTemplate.amountMinor
+        ? formatAmountInput(String(r.transactionTemplate.amountMinor))
+        : "",
+    );
     setError("");
     setDirty(false);
   }
@@ -181,7 +185,7 @@ export default function Recurring() {
                     required
                     inputMode="decimal"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setAmount(formatAmountInput(e.target.value))}
                   />
                 </label>
               </div>

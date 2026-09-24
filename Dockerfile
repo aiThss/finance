@@ -1,7 +1,7 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund && npm cache clean --force
 COPY . .
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
@@ -11,7 +11,7 @@ FROM node:24-alpine AS runtime
 ENV NODE_ENV=production PORT=3000
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY server ./server
 USER node

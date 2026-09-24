@@ -8,7 +8,7 @@ import {
   format,
 } from "date-fns";
 import { useApp } from "../../app/context";
-import { budgetStatus, monthKey, parseMoney } from "../../domain/money";
+import { budgetStatus, monthKey, parseMoney, formatAmountInput } from "../../domain/money";
 import { budgetRepository, uid } from "../../db/repositories";
 import type { Budget } from "../../domain/schema";
 import {
@@ -30,7 +30,7 @@ export default function Budgets() {
   const [busy, setBusy] = useState(false);
   function start(b: Budget) {
     setEdit(b);
-    setAmount(b.amountMinor ? String(b.amountMinor) : "");
+    setAmount(b.amountMinor ? formatAmountInput(String(b.amountMinor)) : "");
     setError("");
     setDirty(false);
   }
@@ -210,7 +210,7 @@ export default function Budgets() {
                 required
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatAmountInput(e.target.value))}
               />
             </label>
             <label>
@@ -221,7 +221,7 @@ export default function Budgets() {
                   setEdit({ ...edit, categoryId: e.target.value || undefined })
                 }
               >
-                <option value="">Tất cả chi tiêu</option>
+                <option value="">Tất cả</option>
                 {data.categories
                   .filter((c) => c.type === "expense")
                   .map((c) => (

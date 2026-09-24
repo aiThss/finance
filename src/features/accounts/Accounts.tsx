@@ -4,6 +4,7 @@ import {
   Plus,
   ArrowUp,
   Archive,
+  Pencil,
   Banknote,
   Building2,
   Smartphone,
@@ -12,7 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useApp } from "../../app/context";
-import { accountBalances, sum, parseMoney } from "../../domain/money";
+import { accountBalances, sum, parseMoney, formatAmountInput } from "../../domain/money";
 import { accountRepository, now, uid } from "../../db/repositories";
 import type { Account } from "../../domain/schema";
 import {
@@ -124,7 +125,7 @@ export default function Accounts() {
             </button>
             <div className="account-actions">
               <button disabled={i === 0} onClick={() => void move(a.id)}>
-                <ArrowUp size={15} />
+                <ArrowUp size={13} />
                 Lên trên
               </button>
               <button
@@ -134,10 +135,13 @@ export default function Accounts() {
                     .catch((e) => notify(message(e)))
                 }
               >
-                <Archive size={15} />
+                <Archive size={13} />
                 {a.archived ? "Dùng lại" : "Lưu trữ"}
               </button>
-              <button onClick={() => setEdit(a)}>Chỉnh sửa</button>
+              <button onClick={() => setEdit(a)}>
+                <Pencil size={13} />
+                Sửa
+              </button>
             </div>
           </article>
         );
@@ -157,7 +161,7 @@ function AccountForm({
   const [name, setName] = useState(initial.name ?? "");
   const [type, setType] = useState<Account["type"]>(initial.type ?? "cash");
   const [opening, setOpening] = useState(
-    String(initial.openingBalanceMinor ?? 0),
+    formatAmountInput(String(initial.openingBalanceMinor ?? 0)),
   );
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -226,7 +230,7 @@ function AccountForm({
             inputMode="decimal"
             required
             value={opening}
-            onChange={(e) => setOpening(e.target.value)}
+            onChange={(e) => setOpening(formatAmountInput(e.target.value))}
           />
         </label>
         <p className="hint">

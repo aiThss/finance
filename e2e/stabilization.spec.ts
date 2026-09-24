@@ -274,3 +274,38 @@ test("option picker locks background scroll and dismisses on backdrop click", as
     await page.evaluate(() => document.body.style.overflow),
   ).not.toBe("hidden");
 });
+
+test("nested option picker inside sheet closes without closing the parent sheet", async ({
+  page,
+}) => {
+  await page.goto("/accounts");
+  await page
+    .getByRole("button", { name: "Thêm tài khoản", exact: true })
+    .first()
+    .click();
+  const parentSheet = page.getByRole("dialog", { name: "Tài khoản mới" });
+  await expect(parentSheet).toBeVisible();
+
+  // Click "Loại tài khoản" to open SelectField bottom sheet
+  const typeField = parentSheet.locator(".select-field");
+  await typeField.click();
+  const selectBackdrop = page.locator(".select-sheet-backdrop");
+  await expect(selectBackdrop).toBeVisible();
+
+  // Click close button on SelectField sheet
+  await page.locator(".select-sheet-close").click();
+  await expect(selectBackdrop).toHaveCount(0);
+
+  // Verify parent "Tài khoản mới" sheet is STILL VISIBLE and not closed
+  await expect(parentSheet).toBeVisible();
+
+  // Re-open SelectField and select an option
+  await typeField.click();
+  await expect(selectBackdrop).toBeVisible();
+  await page.locator(".select-option-row", { hasText: "Ví điện tử" }).click();
+  await expect(selectBackdrop).toHaveCount(0);
+
+  // Verify parent sheet is STILL VISIBLE with updated choice
+  await expect(parentSheet).toBeVisible();
+  await expect(typeField.locator(".select-label-text")).toHaveText("Ví điện tử");
+});

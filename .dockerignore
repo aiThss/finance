@@ -7,4 +7,7 @@ android
 test-results
 playwright-report
 .impeccable
-docs/screenshots
+docs
+e2e
+scripts
+artifacts
