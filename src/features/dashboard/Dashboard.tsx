@@ -135,7 +135,7 @@ export default function Dashboard() {
         <Empty
           title="Chưa có giao dịch"
           description="Ghi lại thu chi để theo dõi dòng tiền chính xác."
-          action="Thêm giao dịch"
+          action="Thêm giao dịch đầu tiên"
           onAction={() => openTransaction()}
         />
       )}

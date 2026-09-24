@@ -78,14 +78,13 @@ button {
     opacity 160ms,
     transform 140ms ease,
     background-color 140ms ease;
-  outline: none;
 }
 @media (hover: hover) and (pointer: fine) {
   button:hover {
     opacity: 0.88;
   }
 }
-button:focus {
+button:focus:not(:focus-visible) {
   outline: none;
 }
 button:active {
@@ -99,9 +98,8 @@ button:disabled {
 a {
   color: var(--accent);
   text-decoration: none;
-  outline: none;
 }
-a:focus {
+a:focus:not(:focus-visible) {
   outline: none;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -123,7 +121,7 @@ button {
   outline: none !important;
 }
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 75%, transparent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 h1,
@@ -272,9 +270,9 @@ strong {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
-  background: var(--glass-l2);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--nav-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--specular-border);
   border-top: 1px solid var(--specular-top);
   border-radius: 26px;
@@ -1606,14 +1604,17 @@ summary {
   padding: 16px 18px;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
-  outline: none;
   cursor: pointer;
   transition:
     background-color 140ms ease,
     transform 120ms ease;
 }
-.more-row:focus {
+.more-row:focus:not(:focus-visible) {
   outline: none !important;
+}
+.more-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 .more-row:active {
   transform: scale(0.985);
@@ -1622,6 +1623,32 @@ summary {
 }
 :root[data-theme="light"] .more-row:active {
   background: rgba(0, 0, 0, 0.035);
+}
+details.extra-tools {
+  margin-top: 14px;
+}
+details.extra-tools summary {
+  padding: 14px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: color 140ms ease;
+}
+details.extra-tools summary::-webkit-details-marker {
+  display: none;
+}
+details.extra-tools summary:hover {
+  color: var(--text-primary);
+}
+details.extra-tools[open] summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
 }
 .more-row > span:nth-child(2) {
   flex: 1;

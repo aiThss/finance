@@ -9,18 +9,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { PageTitle } from "../components/ui/Common";
+
 export default function More() {
   const entries = [
     [
       "/budgets",
       "Ngân sách",
-      "Hạn mức chi tiêu",
+      "Hạn mức chi tiêu mỗi tháng",
       ChartNoAxesCombined,
     ],
     [
       "/reports",
       "Báo cáo",
-      "Thống kê và xu hướng dòng tiền",
+      "Một bức tranh rõ hơn về thu chi",
       ChartNoAxesCombined,
     ],
     ["/settings", "Cài đặt", "Giao diện, sao lưu và bảo mật", Settings],
@@ -29,10 +30,11 @@ export default function More() {
     ["/ai", "Trợ lý AI", "Nhận diện văn bản & hóa đơn", Sparkles],
     ["/trash", "Thùng rác", "Khôi phục giao dịch đã xóa", Trash2],
   ] as const;
+
   return (
     <>
       <PageTitle
-        title="Mở rộng"
+        title="Góc của bạn"
         description="Công cụ quản lý tài chính và cài đặt hệ thống"
       />
       <div className="glass-bubble more-group">
@@ -49,7 +51,8 @@ export default function More() {
           </Link>
         ))}
       </div>
-      <div className="glass-bubble more-group" style={{ marginTop: 14 }}>
+      <details className="extra-tools glass-bubble">
+        <summary>Công cụ khác</summary>
         {entries.slice(3).map(([to, title, description, Icon]) => (
           <Link className="more-row" key={to} to={to}>
             <span className="category-icon">
@@ -62,7 +65,7 @@ export default function More() {
             <ChevronRight size={18} />
           </Link>
         ))}
-      </div>
+      </details>
       <p className="local-note">
         Túi Nhỏ · Quản lý tài chính cá nhân an toàn & ngoại tuyến
       </p>

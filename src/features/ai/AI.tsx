@@ -265,7 +265,7 @@ export default function AI() {
               {busy
                 ? "Đang xử lý…"
                 : mode === "entry"
-                  ? "Tạo giao dịch từ nội dung"
+                  ? "Gửi để tạo bản nháp"
                   : "Gửi phân tích"}
             </button>
             {busy && (
@@ -313,7 +313,7 @@ export default function AI() {
                   });
                 }}
               >
-                Áp dụng vào giao dịch
+                Kiểm tra & chỉnh sửa trước khi lưu
               </button>
             </section>
           )}
