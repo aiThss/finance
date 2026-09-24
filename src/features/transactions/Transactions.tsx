@@ -164,7 +164,7 @@ export default function Transactions() {
       </div>
       {!items.length ? (
         <Empty
-          title="Không có giao dịch"
+          title="Chưa có giao dịch ở đây"
           description="Thử đổi bộ lọc hoặc thêm giao dịch mới."
           action="Thêm giao dịch"
           onAction={() => openTransaction()}

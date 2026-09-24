@@ -172,7 +172,7 @@ export function TransactionSheet({
   }
   return (
     <Sheet
-      title={draft.id ? "Chi tiết giao dịch" : "Thêm giao dịch"}
+      title={draft.id ? "Chi tiết giao dịch" : "Ghi một khoản mới"}
       onClose={onClose}
       dirty={!clean && (isDirty || type !== (draft.type ?? "expense"))}
     >

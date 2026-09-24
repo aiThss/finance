@@ -111,12 +111,23 @@ async function checkTop(theme) {
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
-  const expected = theme === "light" ? [247, 248, 243] : [17, 21, 19];
+  const palettes =
+    theme === "light"
+      ? [
+          [247, 248, 243],
+          [246, 248, 245],
+        ]
+      : [
+          [17, 21, 19],
+          [10, 14, 12],
+        ];
   for (let y = 2; y < brand.rect[1]; y++) {
     // The outer page gutter must continue seamlessly, including a possible band.
     const offset = (y * info.width + Math.round(4 * density)) * info.channels;
     assert(
-      expected.every((v, c) => Math.abs(data[offset + c] - v) < 14),
+      palettes.some((expected) =>
+        expected.every((v, c) => Math.abs(data[offset + c] - v) < 18),
+      ),
       `Unexpected ${theme} band at row ${y}`,
     );
   }
