@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Capacitor } from "@capacitor/core";
 
 export const releasesUrl = "https://github.com/aiThss/finance/releases/latest";
 const releaseSchema = z.object({
@@ -120,6 +121,26 @@ export async function downloadApk(
   });
   if (onProgress) onProgress(100, loaded, total || loaded);
   return blob;
+}
+
+export function openApkDownload(url: string) {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      window.open(url, "_system");
+      return;
+    } catch {
+      window.location.assign(url);
+      return;
+    }
+  }
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tui-nho.apk";
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 export function triggerApkInstall(blob: Blob, filename = "tui-nho.apk") {

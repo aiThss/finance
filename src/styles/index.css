@@ -2539,12 +2539,13 @@ body:has(dialog[open]) .update-prompt {
   }
 }
 
-/* APK Auto-Update Banner & Pixel Squiggly Download Modal */
+/* APK Auto-Update: Compact Bottom Card (Gọn ở dưới đáy, không khóa màn hình) */
+.apk-update-bottom-card,
 .apk-update-banner {
   position: fixed;
-  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-  left: 16px;
-  right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  left: 14px;
+  right: 14px;
   max-width: 480px;
   margin: 0 auto;
   z-index: 40;
@@ -2558,11 +2559,15 @@ body:has(dialog[open]) .update-prompt {
   border-radius: 20px;
   box-shadow:
     var(--glass-shadow),
-    0 4px 20px rgba(16, 185, 129, 0.2);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  animation: fadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    0 8px 30px rgba(0, 0, 0, 0.4),
+    0 2px 14px color-mix(in srgb, var(--accent) 30%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  overflow: hidden;
+  animation: slideUp 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.apk-bottom-icon,
 .apk-banner-icon {
   display: grid;
   place-items: center;
@@ -2571,9 +2576,15 @@ body:has(dialog[open]) .update-prompt {
   border-radius: 12px;
   background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
   color: var(--accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
   flex-shrink: 0;
 }
+
+.apk-bottom-icon .pulsing-icon {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.apk-bottom-info,
 .apk-banner-text {
   flex: 1;
   min-width: 0;
@@ -2581,10 +2592,33 @@ body:has(dialog[open]) .update-prompt {
   flex-direction: column;
   gap: 2px;
 }
+
+.apk-bottom-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.apk-bottom-title strong,
 .apk-banner-text strong {
   font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
 }
+
+.apk-version-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.apk-bottom-sub,
 .apk-banner-text span {
   font-size: 0.75rem;
   color: var(--text-secondary);
@@ -2592,14 +2626,18 @@ body:has(dialog[open]) .update-prompt {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.apk-bottom-actions,
 .apk-banner-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
+
+.apk-btn-compact-update,
 .apk-btn-update {
-  padding: 7px 12px;
+  padding: 7px 14px;
   min-height: unset;
   border-radius: 12px;
   background: var(--accent);
@@ -2608,22 +2646,62 @@ body:has(dialog[open]) .update-prompt {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 45%, transparent);
   transition:
     transform 120ms ease,
     opacity 140ms ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
+
+.apk-btn-compact-update.secondary {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .apk-btn-compact-update,
 :root[data-theme="light"] .apk-btn-update {
   color: #ffffff;
 }
+
+:root[data-theme="light"] .apk-btn-compact-update.secondary {
+  color: var(--text-primary);
+}
+
+.apk-btn-compact-update:active,
 .apk-btn-update:active {
   transform: scale(0.95);
 }
+
+.apk-btn-compact-external {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition:
+    color 140ms,
+    background 140ms;
+}
+
+.apk-btn-compact-external:hover {
+  color: var(--text-primary);
+  background: var(--surface-3);
+}
+
+.apk-btn-compact-dismiss,
 .apk-btn-dismiss {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   min-height: unset;
   padding: 0;
   border-radius: 50%;
@@ -2631,131 +2709,75 @@ body:has(dialog[open]) .update-prompt {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
+  transition: color 140ms;
 }
+
+.apk-btn-compact-dismiss:hover,
 .apk-btn-dismiss:hover {
   color: var(--text-primary);
 }
 
-/* Pixel Squiggly Wavy Progress Modal */
-.pixel-download-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 180ms ease;
+.apk-bottom-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), #34d399, var(--accent));
+  background-size: 200% 100%;
+  animation: shimmer-bar 1.5s infinite linear;
 }
-.pixel-download-modal {
-  width: 100%;
-  max-width: 400px;
-  background: var(--glass-sheet);
-  border: 1px solid var(--specular-border);
-  border-top: 1px solid var(--specular-top);
-  border-radius: 28px;
-  padding: 24px 22px 20px;
-  box-shadow:
-    var(--glass-shadow),
-    0 16px 48px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px 0 var(--specular-top);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  animation: sheet-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.pixel-modal-header {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.pixel-modal-icon-glow {
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
-  color: var(--accent);
-  display: grid;
-  place-items: center;
-  box-shadow:
-    0 0 20px color-mix(in srgb, var(--accent) 45%, transparent),
-    inset 0 1px 1px 0 var(--specular-top);
-  margin-bottom: 4px;
-}
-.pixel-modal-header h2 {
-  font-size: 1.1875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-.pixel-modal-subtitle {
-  font-size: 0.84375rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin: 0;
-}
-.pixel-progress-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 4px;
-}
-.pixel-wavy-container {
-  width: 100%;
-  overflow: visible;
-}
-.pixel-wavy-svg {
-  width: 100%;
-  display: block;
-  overflow: visible;
-}
-.pixel-worm-path {
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.65));
-  animation: worm-wiggle 1s ease-in-out infinite alternate;
-}
-.pixel-worm-head {
-  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.95));
-}
-@keyframes worm-wiggle {
+
+@keyframes shimmer-bar {
   0% {
-    transform: translateY(-1.5px);
+    background-position: 200% 0;
   }
   100% {
-    transform: translateY(1.5px);
+    background-position: -200% 0;
   }
 }
-.pixel-progress-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-  padding: 0 2px;
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
 }
-.pixel-download-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--danger) 12%, var(--surface-2));
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
-  border-radius: 12px;
-  color: var(--danger);
-  font-size: 0.8125rem;
+
+@media (min-width: 768px) {
+  .apk-update-bottom-card,
+  .apk-update-banner {
+    bottom: 24px;
+    right: 24px;
+    left: auto;
+    margin: 0;
+  }
 }
-.pixel-modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 4px;
+
+@media (max-width: 359px) {
+  .apk-update-bottom-card,
+  .apk-update-banner {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    left: 8px;
+    right: 8px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .apk-bottom-sub {
+    font-size: 0.6875rem;
+  }
+  .apk-btn-compact-update {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
 }
-.pixel-modal-actions button {
-  flex: 1;
-}
+
 
 /* ==========================================================================
    Liquid Glass DateTimePicker Field
