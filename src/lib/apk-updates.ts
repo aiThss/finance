@@ -59,3 +59,54 @@ export async function checkApkUpdate(current: string) {
     );
   return parseRelease(await response.json(), current);
 }
+
+export async function downloadApk(
+  url: string,
+  onProgress?: (percent: number, loaded: number, total: number) => void,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const response = await fetch(url, { signal });
+  if (!response.ok) throw new Error("Không thể tải bản cài đặt APK.");
+  const contentLength = response.headers.get("content-length");
+  const total = contentLength ? parseInt(contentLength, 10) : 0;
+  let loaded = 0;
+
+  if (!response.body) {
+    const blob = await response.blob();
+    onProgress?.(100, blob.size, blob.size);
+    return blob;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: BlobPart[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      loaded += value.length;
+      if (total > 0 && onProgress) {
+        onProgress(Math.min(100, Math.round((loaded / total) * 100)), loaded, total);
+      }
+    }
+  }
+
+  const blob = new Blob(chunks, {
+    type: "application/vnd.android.package-archive",
+  });
+  if (onProgress) onProgress(100, loaded, total || loaded);
+  return blob;
+}
+
+export function triggerApkInstall(blob: Blob, filename = "tui-nho.apk") {
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+}
+

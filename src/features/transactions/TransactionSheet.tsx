@@ -9,7 +9,7 @@ import { Sheet, dismissSheet } from "../../components/ui/Sheet";
 import { ErrorText, message } from "../../components/ui/Common";
 import { CategoryIcon } from "../../components/ui/Icon";
 import { now, uid, transactionRepository } from "../../db/repositories";
-import { parseMoney } from "../../domain/money";
+import { parseMoney, formatAmountInput } from "../../domain/money";
 import { vi } from "../../locales/vi";
 import type { Transaction } from "../../domain/schema";
 interface FormValues {
@@ -101,6 +101,35 @@ export function TransactionSheet({
         a.name.localeCompare(b.name, "vi"),
     );
   const categoryId = watch("categoryId");
+
+  const appendZeros = (zeros: string) => {
+    const currentVal = (watch("amount") || "").trim();
+    if (!currentVal || currentVal === "0") {
+      setValue("amount", formatAmountInput(`1${zeros}`), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      return;
+    }
+    let raw = currentVal;
+    try {
+      const parsed = parseMoney(currentVal);
+      raw = parsed.toString();
+    } catch {
+      raw = currentVal.replace(/\D/g, "");
+    }
+    const nextVal = `${raw}${zeros}`;
+    setValue("amount", formatAmountInput(nextVal), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const clearAmount = () => {
+    setValue("amount", "", { shouldDirty: true, shouldValidate: true });
+    setFocus("amount");
+  };
+
   async function save(v: FormValues, another = false) {
     setError("");
     setBusy(true);
@@ -202,16 +231,70 @@ export function TransactionSheet({
               </button>
             ))}
           </div>
-          <label className="amount-field">
-            Số tiền <span>VND</span>
-            <input
-              inputMode="decimal"
-              placeholder="0"
-              autoComplete="off"
-              {...register("amount", { required: true })}
-            />
-            <small>Hỗ trợ nhập tắt như 45k, 500k hoặc 1.2m</small>
-          </label>
+          <div className="amount-field">
+            <div className="amount-header">
+              <label htmlFor="amount-input">Số tiền</label>
+            </div>
+            <div className="amount-box">
+              <input
+                id="amount-input"
+                aria-label="Số tiền"
+                inputMode="decimal"
+                placeholder="0"
+                autoComplete="off"
+                {...register("amount", {
+                  required: true,
+                  onChange: (e) => {
+                    const formatted = formatAmountInput(e.target.value);
+                    setValue("amount", formatted, { shouldValidate: true });
+                  },
+                })}
+              />
+              <span className="amount-unit">đ</span>
+            </div>
+            <div
+              className="quick-zeros-row"
+              role="group"
+              aria-label="Phím số nhanh"
+            >
+              <button
+                type="button"
+                className="quick-zero-btn"
+                onClick={() => appendZeros("00")}
+              >
+                +00
+              </button>
+              <button
+                type="button"
+                className="quick-zero-btn"
+                onClick={() => appendZeros("000")}
+              >
+                +000
+              </button>
+              <button
+                type="button"
+                className="quick-zero-btn"
+                onClick={() => appendZeros("0000")}
+              >
+                +0000
+              </button>
+              <button
+                type="button"
+                className="quick-zero-btn"
+                onClick={() => appendZeros("000000")}
+              >
+                +000.000
+              </button>
+              <button
+                type="button"
+                className="quick-zero-btn clear-btn"
+                onClick={clearAmount}
+                title="Xóa số tiền"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
           <div className="form-grid">
             <label>
               {type === "transfer" ? "Từ tài khoản" : "Tài khoản"}

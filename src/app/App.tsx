@@ -27,6 +27,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import PwaUpdateManager from "./PwaUpdateManager";
+import ApkAutoUpdateManager from "./ApkAutoUpdateManager";
 import { FinanceScope, PrivacyProvider } from "../db/queries";
 import { Capacitor } from "@capacitor/core";
 import { NativeSystemBars } from "./NativeSystemBars";
@@ -40,6 +41,9 @@ export class ErrorBoundary extends Component<
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+  componentDidCatch(error: unknown, info: unknown) {
+    console.error("FATAL ERROR BOUNDARY CAUGHT:", error, info);
   }
   render() {
     return this.state.failed ? (
@@ -199,6 +203,9 @@ function Shell() {
       )}
       {!Capacitor.isNativePlatform() && (
         <PwaUpdateManager sheetOpen={!!draft} />
+      )}
+      {Capacitor.getPlatform() === "android" && (
+        <ApkAutoUpdateManager sheetOpen={!!draft} />
       )}
       {draft && (
         <FinanceScope

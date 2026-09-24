@@ -9,11 +9,12 @@ import {
 import type { Account, Budget, RecurringRule, Transaction } from "./schema";
 export function parseMoney(input: string): number {
   if (input.length > 40) throw new Error("Số tiền quá dài.");
-  const match = input
-    .trim()
-    .toLowerCase()
-    .replace(/\s|₫|đ/g, "")
-    .match(/^(-?)(\d+(?:[.,]\d+)?)([km]?)$/);
+  let cleaned = input.trim().toLowerCase().replace(/\s|₫|đ/g, "");
+  // Hỗ trợ phân cách hàng nghìn tiếng Việt (1.000, 10.000, 100.000, 1.000.000) khi không có hậu tố k/m
+  if (/^-?\d{1,3}(?:\.\d{3})+$/.test(cleaned)) {
+    cleaned = cleaned.replace(/\./g, "");
+  }
+  const match = cleaned.match(/^(-?)(\d+(?:[.,]\d+)?)([km]?)$/);
   if (!match) throw new Error("Nhập số nguyên đồng, hoặc dạng 45k / 1.2m.");
   const [, sign, value, suffix] = match;
   const parts = value.replace(",", ".").split(".");
@@ -27,6 +28,24 @@ export function parseMoney(input: string): number {
     throw new Error("Số tiền vượt giới hạn 1.000 tỷ đồng.");
   return n;
 }
+
+export function formatAmountInput(input: string): string {
+  if (!input) return "";
+  const trimmed = input.trim();
+  // Nếu người dùng nhập tắt (k, m, tr...) thì giữ nguyên định dạng gõ tắt
+  if (/[a-zA-Z]/i.test(trimmed)) {
+    return trimmed;
+  }
+  const isNegative = trimmed.startsWith("-");
+  const digitsOnly = trimmed.replace(/\D/g, "");
+  if (!digitsOnly) return isNegative ? "-" : "";
+  // Xóa số 0 thừa ở đầu nếu chuỗi dài hơn 1 chữ số
+  const normalized = digitsOnly.replace(/^0+(?=\d)/, "");
+  // Định dạng dấu chấm phân cách hàng nghìn
+  const formatted = normalized.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return isNegative ? `-${formatted}` : formatted;
+}
+
 export const money = (n: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",

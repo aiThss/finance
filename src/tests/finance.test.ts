@@ -14,6 +14,7 @@ import {
   reportService,
   budgetStatus,
   parseMoney,
+  formatAmountInput,
   nextOccurrence,
 } from "../domain/money";
 import {
@@ -60,8 +61,22 @@ describe("Deterministic money", () => {
     expect(parseMoney("45k")).toBe(45000);
     expect(parseMoney("1.2m")).toBe(1200000);
     expect(parseMoney("0.001k")).toBe(1);
+    expect(parseMoney("1.000")).toBe(1000);
+    expect(parseMoney("10.000")).toBe(10000);
+    expect(parseMoney("100.000 đ")).toBe(100000);
+    expect(parseMoney("1.000.000₫")).toBe(1000000);
     expect(() => parseMoney("0.1")).toThrow();
     expect(() => parseMoney("9007199254740993")).toThrow();
+  });
+  it("formats amount input with thousand dots while preserving shorthand", () => {
+    expect(formatAmountInput("1000")).toBe("1.000");
+    expect(formatAmountInput("10000")).toBe("10.000");
+    expect(formatAmountInput("100000")).toBe("100.000");
+    expect(formatAmountInput("1000000")).toBe("1.000.000");
+    expect(formatAmountInput("45k")).toBe("45k");
+    expect(formatAmountInput("1.2m")).toBe("1.2m");
+    expect(formatAmountInput("0")).toBe("0");
+    expect(formatAmountInput("")).toBe("");
   });
   it("opening balance + income, expense and signed adjustment", () => {
     const ts = [
