@@ -5,12 +5,17 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing version tag to rebuild with the current release harness
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
-  group: android-release-${{ github.ref }}
+  group: android-release-${{ inputs.release_tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -20,6 +25,25 @@ jobs:
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+      - name: Load current native test harness for historical tags
+        if: inputs.release_tag != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .release-tools
+          sparse-checkout: scripts/android-smoke.mjs
+          sparse-checkout-cone-mode: false
+      - name: Select native test harness
+        env:
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+        run: |
+          if [[ -n "$REQUESTED_TAG" ]]; then
+            echo "NATIVE_SMOKE_SCRIPT=.release-tools/scripts/android-smoke.mjs" >> "$GITHUB_ENV"
+          else
+            echo "NATIVE_SMOKE_SCRIPT=scripts/android-smoke.mjs" >> "$GITHUB_ENV"
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -33,7 +57,7 @@ jobs:
           packages: "platform-tools platforms;android-36 build-tools;36.0.0"
       - run: npm ci
       - run: npm run verify:version
-      - run: npm run lint
+      - run: npm run lint -- --ignore-pattern '.release-tools/**'
       - run: npm test
       - name: Build and verify web assets
         run: |
@@ -43,14 +67,21 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Resolve release version
+        env:
+          REQUESTED_TAG: ${{ inputs.release_tag }}
         run: |
           VERSION="$(node -p 'require("./package.json").version')"
           RELEASE_TAG="v${VERSION}"
+          if [[ -n "$REQUESTED_TAG" && "$REQUESTED_TAG" != "$RELEASE_TAG" ]]; then
+            echo "Requested tag must match package.json version"
+            exit 1
+          fi
           if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "$RELEASE_TAG" ]]; then
             echo "Tag must match package.json version"
             exit 1
           fi
           echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - name: Build release APK
         working-directory: android
         run: bash gradlew assembleRelease --no-daemon
@@ -89,7 +120,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: node scripts/android-smoke.mjs tui-nho.apk
+          script: node "$NATIVE_SMOKE_SCRIPT" tui-nho.apk
       - name: Upload native screenshots and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -106,5 +137,5 @@ jobs:
             exit 1
           fi
           gh release create "$RELEASE_TAG" tui-nho.apk tui-nho.apk.sha256 \
-            --target "$GITHUB_SHA" --title "Túi Nhỏ $RELEASE_TAG" \
+            --target "$RELEASE_SHA" --title "Túi Nhỏ $RELEASE_TAG" \
             --notes-file "docs/releases/$RELEASE_TAG.md" --latest
