@@ -29,7 +29,7 @@ const decode = (s) =>
     .replaceAll("&quot;", '"')
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">");
-async function nodes() {
+async function rawNodes() {
   // Android can return a null accessibility root just after launch or navigation.
   // Never read a stale dump, and retry acquisition before asserting UI content.
   let xml;
@@ -74,9 +74,9 @@ async function nodes() {
     );
 }
 let systemAnrRecoveries = 0;
-async function find(label, exact = true) {
-  for (let i = 0; i < 24; i++) {
-    const currentNodes = await nodes();
+async function nodes() {
+  for (;;) {
+    const currentNodes = await rawNodes();
     const anr = systemAnrWaitButton(currentNodes);
     if (anr?.rect) {
       assert(systemAnrRecoveries < 3, "Emulator remains unhealthy after three system ANRs");
@@ -92,6 +92,12 @@ async function find(label, exact = true) {
       await pause(600);
       continue;
     }
+    return currentNodes;
+  }
+}
+async function find(label, exact = true) {
+  for (let i = 0; i < 24; i++) {
+    const currentNodes = await nodes();
     const matches = currentNodes.filter((n) =>
       [n.text, n["content-desc"]].some((t) =>
         exact ? t === label : t?.includes(label),
@@ -210,6 +216,7 @@ try {
   await capture("launch");
   await tap("Khác");
   await tap("Cài đặt");
+  await find("Che số dư trên các màn hình", false);
   const settingsNodes = await nodes();
   assert(
     settingsNodes.some((n) =>
@@ -315,6 +322,10 @@ try {
   await tap("OK");
   await capture("after-back");
   await tap("Tổng quan");
+  // The bottom-nav label exists on every route. Wait for home content before
+  // delivering Back, allowing the native route listener to finish registration.
+  await find("Tổng số dư");
+  await pause(600);
   shell("input", "keyevent", "KEYCODE_BACK");
   let minimized = false;
   for (let i = 0; i < 12; i++) {

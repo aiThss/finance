@@ -175,6 +175,8 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          ram-size: 4096M
+          disable-spellchecker: true
           disable-animations: true
           script: node "$NATIVE_SMOKE_SCRIPT" tui-nho.apk
       - name: Upload native screenshots and diagnostics
