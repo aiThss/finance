@@ -21,6 +21,7 @@ concurrency:
 jobs:
   build-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
     steps:
@@ -33,7 +34,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           path: .release-tools
-          sparse-checkout: scripts/android-smoke.mjs
+          sparse-checkout: |
+            scripts/android-smoke.mjs
+            scripts/installer-ui.mjs
           sparse-checkout-cone-mode: false
       - name: Select native test harness
         env:
@@ -59,6 +62,8 @@ jobs:
       - run: npm run verify:version
       - run: npm run lint -- --ignore-pattern '.release-tools/**'
       - run: npm test
+      - run: node --test scripts/installer-ui.test.mjs
+        if: inputs.release_tag == ''
       - name: Build and verify web assets
         run: |
           npm run build:android:release
@@ -129,6 +134,7 @@ jobs:
             (cd "artifacts/baselines/$version" && sha256sum -c tui-nho.apk.sha256)
           done
       - name: Package Installer fresh install and upgrades (API 35)
+        timeout-minutes: 15
         if: inputs.release_tag == ''
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -140,9 +146,12 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          ram-size: 4096M
+          disable-spellchecker: true
           disable-animations: true
           script: node scripts/android-installer.mjs tui-nho.apk artifacts/baselines/v1.0.19/tui-nho.apk artifacts/baselines/v1.0.21/tui-nho.apk
       - name: Package Installer fresh install and upgrades (API 36)
+        timeout-minutes: 15
         if: inputs.release_tag == ''
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -154,9 +163,12 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          ram-size: 4096M
+          disable-spellchecker: true
           disable-animations: true
           script: node scripts/android-installer.mjs tui-nho.apk artifacts/baselines/v1.0.19/tui-nho.apk artifacts/baselines/v1.0.21/tui-nho.apk
       - name: Native APK smoke (API 35)
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35

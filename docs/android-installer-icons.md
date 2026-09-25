@@ -150,3 +150,18 @@ That distinction matters: local tests cannot certify the production signer.
 No user device has been connected, cleared, uninstalled or modified. Emulator
 success is not a claim of validation on OnePlus 15 / OxygenOS 16. That OEM
 confirmation remains a separate test of the final release-signed artifact.
+
+## CI follow-up (.23)
+
+Release run 36117489686 built/signed .22 and passed compiled/runtime icon checks,
+but failed waiting for `fresh-confirmation`. Its uploaded XML shows Android's
+`Pixel Launcher isn't responding` dialog covering the installer. The artifact
+is retained as `scripts/fixtures/launcher-anr.xml` for regression tests.
+
+The runner now waits at most 180 seconds per UI condition and 60 seconds per
+ADB command. It selects Wait for at most three explicitly recognized system-app
+ANRs (Pixel Launcher, System UI, Messages), preserving screenshots/XML and
+recording the recovery count. App/installer/unknown ANRs are not dismissed.
+Release emulator steps have 15-minute limits and the job has a 45-minute limit;
+timeout is a failure, never permission to publish. CI emulators use 4096 MB RAM.
+.23 retains .22's icon fix and increments the Android version code to 24.

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import assert from "node:assert/strict";
 import sharp from "sharp";
+import { systemAnrWaitButton } from "./installer-ui.mjs";
 
 // Run only on a disposable emulator. Never clear or seed a user's device.
 const serial =
@@ -14,7 +15,7 @@ assert(
   "Native smoke requires a disposable emulator (ANDROID_SERIAL).",
 );
 const adb = (...args) =>
-  execFileSync("adb", ["-s", serial, ...args], { maxBuffer: 32 * 1024 * 1024 });
+  execFileSync("adb", ["-s", serial, ...args], { maxBuffer: 32 * 1024 * 1024, timeout: 60000 });
 const shell = (...args) =>
   adb("shell", ...args)
     .toString()
@@ -72,13 +73,16 @@ async function nodes() {
         n.rect?.length === 4 && n.rect[2] > n.rect[0] && n.rect[3] > n.rect[1],
     );
 }
+let systemAnrRecoveries = 0;
 async function find(label, exact = true) {
   for (let i = 0; i < 24; i++) {
     const currentNodes = await nodes();
-    const anr = currentNodes.find(
-      (n) => n.text === "Wait" || n.text === "Close app",
-    );
+    const anr = systemAnrWaitButton(currentNodes);
     if (anr?.rect) {
+      assert(systemAnrRecoveries < 3, "Emulator remains unhealthy after three system ANRs");
+      const evidence = `${dir}/system-anr-${++systemAnrRecoveries}`;
+      fs.copyFileSync(`${dir}/latest-ui.xml`, `${evidence}.xml`);
+      fs.writeFileSync(`${evidence}.png`, adb("exec-out", "screencap", "-p"));
       shell(
         "input",
         "tap",

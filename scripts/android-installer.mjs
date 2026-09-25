@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { parseUiTree, systemAnrWaitButton } from "./installer-ui.mjs";
 
 // Usage: node scripts/android-installer.mjs candidate.apk [v1.0.19.apk v1.0.21.apk]
 // --probe-only accepts arbitrary historical APKs and records failures as evidence.
@@ -11,7 +12,7 @@ assert(apks.length, "Supply APK paths");
 const serial = process.env.ANDROID_SERIAL ?? execFileSync("adb", ["devices"], { encoding: "utf8" })
   .match(/^(emulator-\d+)\s+device/m)?.[1];
 assert(serial?.startsWith("emulator-"), "Requires a disposable emulator; never a user's device");
-const adb = (...args) => execFileSync("adb", ["-s", serial, ...args], { maxBuffer: 32 * 1024 * 1024, stdio: "pipe" });
+const adb = (...args) => execFileSync("adb", ["-s", serial, ...args], { maxBuffer: 32 * 1024 * 1024, stdio: "pipe", timeout: 60000 });
 const shell = (...args) => adb("shell", ...args).toString().trim();
 assert.equal(shell("getprop", "ro.kernel.qemu"), "1", "Emulator guard");
 if (process.env.EXPECTED_ANDROID_API) {
@@ -78,21 +79,34 @@ async function nodes(label) {
   if (dumped.includes("ERROR") || !dumped.includes("dumped to")) return [];
   const xml = shell("cat", "/sdcard/installer-ui.xml");
   fs.writeFileSync(`${dir}/${label}.xml`, xml);
-  return [...xml.matchAll(/<node\s+([^>]+)>?/g)].map((m) => Object.fromEntries(
-    [...m[1].matchAll(/([\w-]+)="([^"]*)"/g)].map((a) => [a[1], a[2]])));
+  return parseUiTree(xml);
 }
 function click(node) {
   const [x1, y1, x2, y2] = node.bounds.match(/\d+/g).map(Number);
   shell("input", "tap", String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2)));
 }
+let systemAnrRecoveries = 0;
 async function find(label, predicate) {
-  for (let i = 0; i < 20; i++) {
+  const deadline = performance.now() + 180000;
+  while (performance.now() < deadline) {
     const current = await nodes(label);
+    const wait = systemAnrWaitButton(current);
+    if (wait) {
+      assert(systemAnrRecoveries < 3, "Emulator remains unhealthy after three system ANRs");
+      const evidence = `${dir}/system-anr-${++systemAnrRecoveries}`;
+      fs.copyFileSync(`${dir}/${label}.xml`, `${evidence}.xml`);
+      fs.writeFileSync(`${evidence}.png`, adb("exec-out", "screencap", "-p"));
+      console.log(`System app ANR obstructed ${label}; saved ${evidence}, selecting Wait (${systemAnrRecoveries}/3)`);
+      click(wait);
+      await pause(2000);
+      continue;
+    }
     const node = current.find(predicate);
     if (node) return node;
     await pause(500);
   }
-  throw new Error(`UI element missing: ${label}`);
+  fs.writeFileSync(`${dir}/${label}-timeout.png`, adb("exec-out", "screencap", "-p"));
+  throw new Error(`UI element missing after 180s: ${label}`);
 }
 async function tapText(text) { click(await find(text, (n) => n.text === text || n["content-desc"] === text)); }
 async function launch() {
@@ -170,7 +184,7 @@ try {
     }
     fs.writeFileSync(`${dir}/success.json`, JSON.stringify({ api: report.api,
       candidateVersion: report.version, freshInstall: true, upgrades: [...upgraded],
-      walletRetained: true, transport: "content URI + read grant + Package Installer UI" }, null, 2));
+      walletRetained: true, systemAnrRecoveries, transport: "content URI + read grant + Package Installer UI" }, null, 2));
   }
 } finally {
   try { fs.writeFileSync(`${dir}/logcat.txt`, adb("logcat", "-d", "-t", "4000")); }
