@@ -211,6 +211,8 @@ try {
   );
   shell("settings", "put", "secure", "anr_show_background", "0");
   if (process.argv[2]) adb("install", "-r", process.argv[2]);
+  shell("input", "keyevent", "KEYCODE_HOME");
+  await pause(1000);
   shell("am", "start", "-W", "-n", "com.aithss.finance/.MainActivity");
   await find("Tổng quan");
   await capture("launch");
@@ -328,10 +330,14 @@ try {
   await pause(600);
   shell("input", "keyevent", "KEYCODE_BACK");
   let minimized = false;
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 15; i++) {
     await pause(300);
+    const winDump = shell("dumpsys", "window");
+    const actDump = shell("dumpsys", "activity", "activities");
     if (
-      !/mCurrentFocus=.*com\.aithss\.finance/.test(shell("dumpsys", "window"))
+      !/mCurrentFocus=.*com\.aithss\.finance/.test(winDump) ||
+      !/topResumedActivity=.*com\.aithss\.finance/.test(actDump) ||
+      /mResumedActivity: ActivityRecord\{.*launcher/i.test(actDump)
     ) {
       minimized = true;
       break;
