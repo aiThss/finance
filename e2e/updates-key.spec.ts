@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs";
+
+const pkg = JSON.parse(
+  fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+);
 
 test("APK check offers official newer download, latest and network recovery", async ({
   page,
@@ -45,7 +50,7 @@ test("APK check offers official newer download, latest and network recovery", as
   await expect(
     page.getByText("Đã gửi yêu cầu tải APK.", { exact: true }),
   ).toBeVisible();
-  version = "1.0.0";
+  version = pkg.version;
   await page.getByRole("button", { name: "Kiểm tra cập nhật APK" }).click();
   await expect(
     page.getByText("Bạn đang dùng phiên bản mới nhất."),
