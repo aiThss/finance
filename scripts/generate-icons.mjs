@@ -10,8 +10,8 @@
 //   public/apple-touch-icon.png
 //   public/favicon.ico          (real ICO, PNG-in-ICO format)
 //   android mipmaps: mdpi(48) hdpi(72) xhdpi(96) xxhdpi(144) xxxhdpi(192)
-//   android adaptive foreground: anydpi-v26 and xxhdpi variants
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+//   android adaptive foreground: 108dp at each explicit bitmap density
+import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -92,6 +92,9 @@ async function writeAdaptiveFg(inputBuf, size, relPath) {
   console.log("  ok " + relPath + " (adaptive fg)");
 }
 
+// anydpi is for density-independent drawables, not raster foregrounds. Remove the
+// former override and regenerate EVERY density (old template artwork must not win).
+rmSync(join(root, RES, "mipmap-anydpi-v26/ic_launcher_foreground.png"), { force: true });
 await Promise.all([
   // PWA icons
   writePng(svgBuf, 192,  "public/icon-192.png"),
@@ -112,8 +115,9 @@ await Promise.all([
   writePng(svgBuf, 192, RES + "/mipmap-xxxhdpi/ic_launcher_round.png"),
 
   // Adaptive foreground
-  writeAdaptiveFg(svgBuf, 108, RES + "/mipmap-anydpi-v26/ic_launcher_foreground.png"),
-  writeAdaptiveFg(svgBuf, 144, RES + "/mipmap-xxhdpi/ic_launcher_foreground.png"),
+  ...Object.entries({ mdpi: 108, hdpi: 162, xhdpi: 216, xxhdpi: 324, xxxhdpi: 432 })
+    .map(([density, size]) => writeAdaptiveFg(svgBuf, size,
+      `${RES}/mipmap-${density}/ic_launcher_foreground.png`)),
 
   // Favicon
   writeFavicon(svgBuf, "public/favicon.ico"),

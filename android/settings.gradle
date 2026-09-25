@@ -1,4 +1,6 @@
 include ':app'
+// Separate QA application: never packaged into the finance APK.
+include ':installer-probe'
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
