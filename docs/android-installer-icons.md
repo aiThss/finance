@@ -173,3 +173,16 @@ source”. Setting a package-level appop did not grant the effective permission.
 switch, saves UI evidence and independently asserts
 `PackageManager.canRequestPackageInstalls()` in the QA process. No installation
 assertion is bypassed. The finance APK remains unchanged except version/code.
+# CI follow-up v1.0.25
+
+Run 36158006943 compiled and signed the APK successfully but its setup selector
+missed the Settings Compose toggle: the uploaded XML exposes a checkable,
+clickable android.view.View, not android.widget.Switch. The real XML is now a
+regression fixture. Setup still checks the specific QA app and permission label,
+the checked state, and PackageManager.canRequestPackageInstalls().
+
+The supplemental debug WebView check independently timed out waiting for the
+production Workbox worker to activate. Its precise activation failure was not
+established. Cleanup testing now seeds a minimal debug-only worker and requires
+it to control the page before exercising native bootstrap cleanup. Release APKs
+do not include this fixture.

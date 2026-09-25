@@ -1,7 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { parseUiTree, systemAnrWaitButton } from "./installer-ui.mjs";
+import { parseUiTree, systemAnrWaitButton, installSourceSwitch } from "./installer-ui.mjs";
+
+test("finds the actual CI Compose install-source toggle and verifies its state", () => {
+  const xml = fs.readFileSync(new URL("./fixtures/install-source-compose.xml", import.meta.url), "utf8");
+  const matches = parseUiTree(xml).filter(installSourceSwitch);
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].checked, "false");
+  assert.equal(installSourceSwitch({ ...matches[0], checked: "true" }), true);
+  assert.equal(installSourceSwitch({ ...matches[0], enabled: "false" }), false);
+  assert.equal(installSourceSwitch({ ...matches[0], package: "com.aithss.finance" }), false);
+});
+
+test("supports the classic Settings switch", () => {
+  assert.equal(installSourceSwitch({ package: "com.android.settings", enabled: "true", checkable: "true", class: "android.widget.Switch" }), true);
+});
 
 const fixture = fs.readFileSync(new URL("./fixtures/launcher-anr.xml", import.meta.url), "utf8");
 test("recognizes the actual API 35 CI Pixel Launcher obstruction", () => {

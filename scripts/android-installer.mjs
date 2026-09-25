@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { parseUiTree, systemAnrWaitButton } from "./installer-ui.mjs";
+import { parseUiTree, systemAnrWaitButton, installSourceSwitch } from "./installer-ui.mjs";
 
 // Usage: node scripts/android-installer.mjs candidate.apk [v1.0.19.apk v1.0.21.apk]
 // --probe-only accepts arbitrary historical APKs and records failures as evidence.
@@ -114,8 +114,8 @@ async function allowInstallSource() {
   // the UID-level permission on a pristine emulator. This is QA-app-only setup.
   shell("am", "start", "-W", "-a", "android.settings.MANAGE_UNKNOWN_APP_SOURCES", "-d", `package:${probe}`);
   await find("install-source-settings", (n) => n.package === "com.android.settings" && n.text === "Installer QA");
-  const isSwitch = (n) => n.package === "com.android.settings" &&
-    (n.class === "android.widget.Switch" || n["resource-id"]?.endsWith("/switch_widget"));
+  await find("install-source-label", (n) => n.package === "com.android.settings" && n.text === "Allow from this source");
+  const isSwitch = installSourceSwitch;
   const toggle = await find("install-source-toggle", isSwitch);
   if (toggle.checked !== "true") click(toggle);
   await find("install-source-allowed", (n) => isSwitch(n) && n.checked === "true");

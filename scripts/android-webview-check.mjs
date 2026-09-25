@@ -51,12 +51,16 @@ try {
   // native WebView. This test runs only on the disposable emulator.
   mark("seed legacy service worker");
   await page.evaluate(async () => {
-    await navigator.serviceWorker.register("/sw.js");
+    // Seed an actual controlling worker without depending on production PWA
+    // precaching. This fixture is packaged only in the debug APK.
+    await navigator.serviceWorker.register("/qa-legacy-worker.js", { scope: "/" });
     await Promise.race([
       navigator.serviceWorker.ready,
       new Promise((_, reject) => setTimeout(() => reject(new Error("Legacy worker did not become active within 30s")), 30000)),
     ]);
   });
+  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller?.scriptURL ?? ""))
+    .toContain("/qa-legacy-worker.js");
   mark("verify legacy worker cleanup");
   await page.reload();
   await expect(page.locator(".bottom-nav")).toBeVisible();
