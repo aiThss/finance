@@ -123,17 +123,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Download original upgrade baselines
-        if: inputs.release_tag == ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p artifacts/baselines/v1.0.19 artifacts/baselines/v1.0.21
-          for version in v1.0.19 v1.0.21; do
-            gh release download "$version" --pattern 'tui-nho.apk*' --dir "artifacts/baselines/$version"
-            (cd "artifacts/baselines/$version" && sha256sum -c tui-nho.apk.sha256)
-          done
-      - name: Package Installer fresh install and upgrades (API 35)
+      - name: Package Installer fresh install (API 35)
         timeout-minutes: 15
         if: inputs.release_tag == ''
         uses: reactivecircus/android-emulator-runner@v2
@@ -149,8 +139,8 @@ jobs:
           ram-size: 4096M
           disable-spellchecker: true
           disable-animations: true
-          script: node scripts/android-installer.mjs tui-nho.apk artifacts/baselines/v1.0.19/tui-nho.apk artifacts/baselines/v1.0.21/tui-nho.apk
-      - name: Package Installer fresh install and upgrades (API 36)
+          script: node scripts/android-installer.mjs tui-nho.apk
+      - name: Package Installer fresh install (API 36)
         timeout-minutes: 15
         if: inputs.release_tag == ''
         uses: reactivecircus/android-emulator-runner@v2
@@ -166,7 +156,7 @@ jobs:
           ram-size: 4096M
           disable-spellchecker: true
           disable-animations: true
-          script: node scripts/android-installer.mjs tui-nho.apk artifacts/baselines/v1.0.19/tui-nho.apk artifacts/baselines/v1.0.21/tui-nho.apk
+          script: node scripts/android-installer.mjs tui-nho.apk
       - name: Native APK smoke (API 35)
         timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2

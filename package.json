@@ -1,6 +1,6 @@
 {
   "name": "tui-nho-finance",
-  "version": "1.0.28",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -68,5 +68,5 @@
       "uuid": "^11.1.1"
     }
   },
-  "androidVersionCode": 29
+  "androidVersionCode": 1
 }

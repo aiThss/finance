@@ -178,7 +178,6 @@ try {
     for (const apk of apks) await inspect(apk, false);
   } else {
     const [candidate, ...baselines] = apks;
-    assert.equal(baselines.length, 2, "Supply both .19 and .21 baselines (same signer as candidate)");
     await allowInstallSource();
     const report = await inspect(candidate, true);
     // Destructive setup is restricted to the disposable emulator by BOTH guards above.

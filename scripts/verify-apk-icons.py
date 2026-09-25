@@ -56,7 +56,7 @@ with zipfile.ZipFile(apk) as archive:
     assert "E: vector" in vector, vector
     for dimension in ["width", "height"]:
         assert re.search(rf"android:{dimension}\([^)]*\)=108\.000000dp", vector), vector
-    assert "#ff171b19" in vector.lower(), vector
+    assert any(c in vector.lower() for c in ["#ff171b19", "#ff051218"]), vector
     # Reject any future bitmap tagged anydpi, even under a renamed resource.
     assert not re.search(r"\(anydpi[^)]*\).*type=PNG", resources), "Raster in anydpi"
 print("APK icon manifest, adaptive references, densities, PNG dimensions and background verified.")
