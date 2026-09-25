@@ -124,16 +124,18 @@ try {
       has: page.getByRole("heading", { name: "Trợ lý AI", exact: true }),
     })
     .screenshot({ path: `${dir}/gemini-settings.png` });
-  await page.getByRole("button", { name: "Kiểm tra cập nhật APK" }).click();
-  await expect(page.getByText("Bạn đang dùng phiên bản mới nhất.")).toBeVisible(
-    { timeout: 20000 },
-  );
-  await page
-    .locator(".settings-section")
-    .filter({
-      has: page.getByRole("heading", { name: "Cập nhật APK", exact: true }),
-    })
-    .screenshot({ path: `${dir}/apk-updates.png` });
+  const updates = page.locator(".settings-section").filter({
+    has: page.getByRole("heading", { name: /^Túi Nhỏ / }),
+  });
+  const check = updates.getByRole("button", { name: "Kiểm tra bản mới", exact: true });
+  const responsePromise = page.waitForResponse("https://api.github.com/repos/aiThss/finance/releases/latest");
+  await check.click();
+  const response = await responsePromise;
+  assert([200, 403, 429].includes(response.status()), `Release check HTTP ${response.status()}`);
+  await expect(check).toBeEnabled({ timeout: 30000 });
+  await expect(updates.getByRole("status")).toHaveCount(0);
+  await expect(updates.getByText("Bạn đang dùng phiên bản mới nhất.")).toBeVisible();
+  await updates.screenshot({ path: `${dir}/apk-updates.png` });
   state.liveApkCheck = true;
   fs.writeFileSync(`${dir}/webview.json`, JSON.stringify(state, null, 2));
   console.log(
