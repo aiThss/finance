@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Túi Nhỏ</string>
-    <string name="title_activity_main">Túi Nhỏ</string>
+    <string name="app_name">Heo Nhỏ</string>
+    <string name="title_activity_main">Heo Nhỏ</string>
     <string name="package_name">com.aithss.finance</string>
     <string name="custom_url_scheme">com.aithss.finance</string>
 </resources>

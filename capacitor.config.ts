@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.aithss.finance",
-  appName: "Túi Nhỏ",
+  appName: "Heo Nhỏ",
   webDir: "dist",
   loggingBehavior: "none",
   server: { androidScheme: "https" },

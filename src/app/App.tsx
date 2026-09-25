@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<
   render() {
     return this.state.failed ? (
       <main className="fatal">
-        <h1>Chưa thể mở Túi Nhỏ</h1>
+        <h1>Chưa thể mở Heo Nhỏ</h1>
         <p>
           Không thể đọc dữ liệu hoặc tải màn hình này. Thử tải lại; đừng xóa dữ
           liệu trình duyệt nếu chưa sao lưu.
@@ -138,7 +138,7 @@ function Shell() {
   if (!ready)
     return (
       <main className="fatal" role="status">
-        Đang mở chiếc túi của bạn…
+        Đang mở Heo Nhỏ của bạn…
       </main>
     );
   return (
@@ -150,7 +150,7 @@ function Shell() {
       <aside className="desktop-sidebar">
         <Link className="brand" to="/">
           <TuiNhoMark size={27} />
-          <span>Túi Nhỏ</span>
+          <span>Heo Nhỏ</span>
         </Link>
         <p>Gọn tiền. Nhẹ tâm.</p>
         <nav aria-label="Điều hướng máy tính">

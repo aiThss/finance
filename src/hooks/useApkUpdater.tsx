@@ -298,7 +298,7 @@ export function ApkUpdaterProvider({ children }: { children: ReactNode }) {
         setState(prev => ({
           ...prev,
           phase: "needs_permission",
-          error: "Cho phép Túi Nhỏ cài cập nhật trong Cài đặt.",
+          error: "Cho phép Heo Nhỏ cài cập nhật trong Cài đặt.",
         }));
       } else {
         startPoll();

@@ -57,7 +57,7 @@ export function MobileHeader() {
     <header className="mobile-top">
       <Link to="/" className="brand">
         <TuiNhoMark size={21} />
-        Túi Nhỏ
+        Heo Nhỏ
       </Link>
 
       <div className="quick-menu-container" ref={menuRef}>

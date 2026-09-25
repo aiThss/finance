@@ -12,7 +12,7 @@ export default function PwaUpdateManager({
     <>
       {needRefresh && !sheetOpen && (
         <div className="update-prompt">
-          <p>Có phiên bản Túi Nhỏ mới.</p>
+          <p>Có phiên bản Heo Nhỏ mới.</p>
           <button onClick={() => void updateServiceWorker(true)}>
             Cập nhật
           </button>

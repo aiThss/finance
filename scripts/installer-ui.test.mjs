@@ -23,7 +23,7 @@ test("recognizes the actual API 35 CI Pixel Launcher obstruction", () => {
   assert.equal(button["resource-id"], "android:id/aerr_wait");
   assert.equal(button.text, "Wait");
 });
-for (const title of ["Túi Nhỏ", "Package Installer", "Installer QA", "Unknown app"]) {
+for (const title of ["Heo Nhỏ", "Túi Nhỏ", "Package Installer", "Installer QA", "Unknown app"]) {
   test(`does not hide ${title} ANR`, () => {
     assert.equal(systemAnrWaitButton(parseUiTree(fixture.replace("Pixel Launcher", title))), undefined);
   });

@@ -67,7 +67,7 @@ export default function More() {
         ))}
       </details>
       <p className="local-note">
-        Túi Nhỏ · Quản lý tài chính cá nhân an toàn & ngoại tuyến
+        Heo Nhỏ · Quản lý tài chính cá nhân an toàn & ngoại tuyến
       </p>
     </>
   );

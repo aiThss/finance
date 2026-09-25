@@ -187,5 +187,5 @@ jobs:
             exit 1
           fi
           gh release create "$RELEASE_TAG" tui-nho.apk tui-nho.apk.sha256 \
-            --target "$RELEASE_SHA" --title "Túi Nhỏ $RELEASE_TAG" \
+            --target "$RELEASE_SHA" --title "Heo Nhỏ $RELEASE_TAG" \
             --notes-file "docs/releases/$RELEASE_TAG.md" --latest

@@ -125,7 +125,7 @@ try {
     })
     .screenshot({ path: `${dir}/gemini-settings.png` });
   const updates = page.locator(".settings-section").filter({
-    has: page.getByRole("heading", { name: /^Túi Nhỏ / }),
+    has: page.getByRole("heading", { name: /^Heo Nhỏ / }),
   });
   const check = updates.getByRole("button", { name: "Kiểm tra bản mới", exact: true });
   const responsePromise = page.waitForResponse("https://api.github.com/repos/aiThss/finance/releases/latest");

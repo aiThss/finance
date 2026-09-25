@@ -114,7 +114,7 @@ export default function ApkAutoUpdateManager({
       {/* Info */}
       <div className="apk-bottom-info">
         <div className="apk-bottom-title">
-          <strong>Túi Nhỏ{newVersion ? ` v${newVersion}` : ""}</strong>
+          <strong>Heo Nhỏ{newVersion ? ` v${newVersion}` : ""}</strong>
           {phase === "available" && (
             <span className="apk-version-badge">Mới</span>
           )}
@@ -139,7 +139,7 @@ export default function ApkAutoUpdateManager({
         {/* Trạng thái nhắc nhở permission */}
         {phase === "needs_permission" && (
           <span className="apk-bottom-sub">
-            Mở Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Túi Nhỏ
+            Mở Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Heo Nhỏ
           </span>
         )}
       </div>

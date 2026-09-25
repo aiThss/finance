@@ -132,7 +132,7 @@ async function capture(name) {
   return buffer;
 }
 async function checkTop(theme) {
-  const brand = await find("Túi Nhỏ");
+  const brand = await find("Heo Nhỏ");
   const buffer = await capture(`home-${theme}`);
   const dump = shell("dumpsys", "window");
   fs.writeFileSync(`${dir}/window-${theme}.txt`, dump);

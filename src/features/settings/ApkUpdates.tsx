@@ -234,7 +234,7 @@ export function ApkUpdates() {
   return (
     <section className="settings-section">
       <h2>
-        Túi Nhỏ <span className="muted">{currentVersion}</span>
+        Heo Nhỏ <span className="muted">{currentVersion}</span>
       </h2>
 
       {/* Thông tin phiên bản */}
@@ -268,7 +268,7 @@ export function ApkUpdates() {
       {/* Permission hint */}
       {phase === "needs_permission" && (
         <p className="muted" style={{ margin: "4px 0 12px" }}>
-          Vào Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Túi Nhỏ, rồi quay lại.
+          Vào Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Heo Nhỏ, rồi quay lại.
         </p>
       )}
 

@@ -42,7 +42,7 @@ public class ApkDownloadPlugin extends Plugin {
                 File file = ApkUpdateState.file(getContext());
                 if (!file.getParentFile().isDirectory() && !file.getParentFile().mkdirs()) throw new IOException();
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url))
-                        .setTitle("Túi Nhỏ · Đang tải cập nhật")
+                        .setTitle("Heo Nhỏ · Đang tải cập nhật")
                         .setMimeType("application/vnd.android.package-archive")
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                         .setDestinationUri(Uri.fromFile(file));
@@ -147,7 +147,7 @@ public class ApkDownloadPlugin extends Plugin {
                 }
                 ApkUpdateState.verify(getContext());
                 if (Build.VERSION.SDK_INT >= 26 && !getContext().getPackageManager().canRequestPackageInstalls()) {
-                    ApkUpdateState.state(getContext(), "needs_permission", "Cho phép Túi Nhỏ cài cập nhật.");
+                    ApkUpdateState.state(getContext(), "needs_permission", "Cho phép Heo Nhỏ cài cập nhật.");
                     getActivity().runOnUiThread(() -> {
                         try {
                             getActivity().startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getContext().getPackageName())));

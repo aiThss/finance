@@ -20,10 +20,10 @@ public class UpdateInstallReceiver extends BroadcastReceiver {
     static void cancelNotification(Context c) { NotificationManagerCompat.from(c).cancel(NOTICE); }
     static void notify(Context c, String text, PendingIntent action) {
         NotificationManager manager = (NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= 26) manager.createNotificationChannel(new NotificationChannel(CHANNEL, "Cập nhật Túi Nhỏ", NotificationManager.IMPORTANCE_DEFAULT));
+        if (Build.VERSION.SDK_INT >= 26) manager.createNotificationChannel(new NotificationChannel(CHANNEL, "Cập nhật Heo Nhỏ", NotificationManager.IMPORTANCE_DEFAULT));
         try {
             NotificationManagerCompat.from(c).notify(NOTICE, new NotificationCompat.Builder(c, CHANNEL)
-                    .setSmallIcon(R.drawable.ic_update_notification).setContentTitle("Túi Nhỏ")
+                    .setSmallIcon(R.drawable.ic_update_notification).setContentTitle("Heo Nhỏ")
                     .setContentText(text).setContentIntent(action).setAutoCancel(true).build());
         } catch (SecurityException ignored) { /* Notification permission can be declined; foreground UI still works. */ }
     }
@@ -47,7 +47,7 @@ public class UpdateInstallReceiver extends BroadcastReceiver {
             PendingIntent open = PendingIntent.getActivity(c, NOTICE + 1, launch, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             // A replacement normally kills the old process. Respect background launch restrictions.
             if (MainActivity.foreground) { try { c.startActivity(launch); return; } catch (Exception ignored) { } }
-            notify(c, "Túi Nhỏ đã được cập nhật · Mở ứng dụng", open);
+            notify(c, "Heo Nhỏ đã được cập nhật · Mở ứng dụng", open);
             return;
         }
         if (!ACTION_RESULT.equals(intent.getAction())) return;

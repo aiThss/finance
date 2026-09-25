@@ -9,8 +9,8 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ["icon.svg", "favicon.ico", "apple-touch-icon.png"],
       manifest: {
-        name: "Túi Nhỏ — Tài chính cá nhân",
-        short_name: "Túi Nhỏ",
+        name: "Heo Nhỏ — Tài chính cá nhân",
+        short_name: "Heo Nhỏ",
         lang: "vi",
         description: "Một chút ghi chép, nhẹ lòng mỗi ngày.",
         theme_color: "#171b19",

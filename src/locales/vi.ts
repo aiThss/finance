@@ -1,6 +1,6 @@
 // Locale entry point. Add another dictionary and select it here when English ships.
 export const vi = {
-  appName: "Túi Nhỏ",
+  appName: "Heo Nhỏ",
   nav: {
     home: "Tổng quan",
     transactions: "Giao dịch",
