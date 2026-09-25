@@ -165,3 +165,11 @@ recording the recovery count. App/installer/unknown ANRs are not dismissed.
 Release emulator steps have 15-minute limits and the job has a 45-minute limit;
 timeout is a failure, never permission to publish. CI emulators use 4096 MB RAM.
 .23 retains .22's icon fix and increments the Android version code to 24.
+
+Run 36119878604 then exposed a second clean-emulator setup issue: the installer
+displayed “your phone currently isn’t allowed to install unknown apps from this
+source”. Setting a package-level appop did not grant the effective permission.
+.24 opens Android's per-app unknown-source Settings page, enables the QA app's
+switch, saves UI evidence and independently asserts
+`PackageManager.canRequestPackageInstalls()` in the QA process. No installation
+assertion is bypassed. The finance APK remains unchanged except version/code.

@@ -5,6 +5,13 @@ import { execFileSync } from "node:child_process";
 
 // Supplemental debug-only inspection of the actual installed WebView. The
 // release smoke deliberately uses OS accessibility and screenshots instead.
+let phase = "discover Android devices";
+const mark = (name) => { phase = name; console.log(`WebView check: ${name}`); };
+const watchdog = setTimeout(() => {
+  console.error(`WebView check exceeded 5 minutes during: ${phase}`);
+  process.exit(1);
+}, 300000);
+mark(phase);
 const devices = await android.devices();
 const device = devices.find(
   (d) => d.serial() === (process.env.ANDROID_SERIAL ?? "emulator-5554"),
@@ -12,9 +19,14 @@ const device = devices.find(
 assert(device, "Emulator unavailable");
 assert(device.serial().startsWith("emulator-"), "Use a disposable emulator");
 try {
+  device.setDefaultTimeout(30000);
+  mark("launch app and discover debuggable WebView");
   await device.shell("am start -W -n com.aithss.finance/.MainActivity");
   const webview = await device.webView({ pkg: "com.aithss.finance" });
+  mark("attach to WebView");
   const page = await webview.page();
+  page.setDefaultTimeout(30000);
+  mark("verify native state and navigation");
   await expect(page.locator(".bottom-nav")).toBeVisible();
   const state = await page.evaluate(async () => ({
     native: window.Capacitor?.isNativePlatform(),
@@ -37,10 +49,15 @@ try {
   await expect(nav).toHaveCSS("backdrop-filter", "none");
   // Simulate a worker left by v1.0.1 and exercise upgrade cleanup on a real
   // native WebView. This test runs only on the disposable emulator.
+  mark("seed legacy service worker");
   await page.evaluate(async () => {
     await navigator.serviceWorker.register("/sw.js");
-    await navigator.serviceWorker.ready;
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Legacy worker did not become active within 30s")), 30000)),
+    ]);
   });
+  mark("verify legacy worker cleanup");
   await page.reload();
   await expect(page.locator(".bottom-nav")).toBeVisible();
   await expect
@@ -54,6 +71,7 @@ try {
     .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
     .toBe(false);
   state.legacyWorkerRetired = true;
+  mark("verify encrypted key persistence and removal");
   const dir = process.env.NATIVE_ARTIFACT_DIR ?? "artifacts/android-smoke";
   fs.mkdirSync(dir, { recursive: true });
   await nav.getByRole("link", { name: "Khác", exact: true }).click();
@@ -75,7 +93,7 @@ try {
       "cat",
       "shared_prefs/local-gemini.xml",
     ],
-    { encoding: "utf8" },
+    { encoding: "utf8", timeout: 30000 },
   );
   assert(
     encryptedPrefs.includes("ciphertext") && encryptedPrefs.includes("iv"),
@@ -94,6 +112,7 @@ try {
     page.getByRole("button", { name: "Kiểm tra key Gemini" }),
   ).toBeDisabled();
   state.encryptedKeyPersistenceAndRemoval = true;
+  mark("verify release update check");
   await page.getByText("Cách lấy API key", { exact: true }).click();
   await page
     .locator(".settings-section")
@@ -117,5 +136,7 @@ try {
     "Installed Android WebView: native platform, zero service workers, cover viewport, touch navigation and no blur verified.",
   );
 } finally {
+  mark("close Android connections");
   for (const d of devices) await d.close();
+  clearTimeout(watchdog);
 }

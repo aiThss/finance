@@ -33,7 +33,6 @@ const startProbe = (mode) => {
 };
 assert.match(adb("install", "-r", "android/installer-probe/build/outputs/apk/debug/installer-probe-debug.apk").toString(), /Success/);
 startProbe("prepare");
-shell("appops", "set", probe, "REQUEST_INSTALL_PACKAGES", "allow");
 
 async function inspect(apk, strict) {
   shell("rm", "-f", `${remote}/report.json`);
@@ -50,6 +49,7 @@ async function inspect(apk, strict) {
   assert(!report.error, report.error);
   assert.equal(report.icons.length, 16);
   if (strict) {
+    assert.equal(report.canRequestPackageInstalls, true, "Installer QA is not authorized as an install source");
     for (const icon of [report.packageManagerIcon, ...report.icons]) {
       assert.equal(icon.class, "AdaptiveIconDrawable", "Must load the real adaptive icon, not a fallback");
       for (const layer of [icon, icon.foreground, icon.background].filter(Boolean)) {
@@ -109,6 +109,19 @@ async function find(label, predicate) {
   throw new Error(`UI element missing after 180s: ${label}`);
 }
 async function tapText(text) { click(await find(text, (n) => n.text === text || n["content-desc"] === text)); }
+async function allowInstallSource() {
+  // Use the platform UI, rather than assuming a package-level appop has granted
+  // the UID-level permission on a pristine emulator. This is QA-app-only setup.
+  shell("am", "start", "-W", "-a", "android.settings.MANAGE_UNKNOWN_APP_SOURCES", "-d", `package:${probe}`);
+  await find("install-source-settings", (n) => n.package === "com.android.settings" && n.text === "Installer QA");
+  const isSwitch = (n) => n.package === "com.android.settings" &&
+    (n.class === "android.widget.Switch" || n["resource-id"]?.endsWith("/switch_widget"));
+  const toggle = await find("install-source-toggle", isSwitch);
+  if (toggle.checked !== "true") click(toggle);
+  await find("install-source-allowed", (n) => isSwitch(n) && n.checked === "true");
+  fs.writeFileSync(`${dir}/install-source-allowed.png`, adb("exec-out", "screencap", "-p"));
+  shell("input", "keyevent", "KEYCODE_BACK");
+}
 async function launch() {
   shell("am", "start", "-W", "-n", `${app}/.MainActivity`);
   await find("app-launched", (n) => n.text === "Ví tiền");
@@ -166,6 +179,7 @@ try {
   } else {
     const [candidate, ...baselines] = apks;
     assert.equal(baselines.length, 2, "Supply both .19 and .21 baselines (same signer as candidate)");
+    await allowInstallSource();
     const report = await inspect(candidate, true);
     // Destructive setup is restricted to the disposable emulator by BOTH guards above.
     uninstall();

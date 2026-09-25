@@ -30,6 +30,7 @@ public class ProbeActivity extends Activity {
         File apk = new File(getExternalFilesDir(null), "candidate.apk");
         JSONObject report = new JSONObject();
         try {
+            report.put("canRequestPackageInstalls", getPackageManager().canRequestPackageInstalls());
             if ("open".equals(getIntent().getStringExtra("mode"))) {
                 Intent install = new Intent(Intent.ACTION_VIEW);
                 install.setDataAndType(FileProvider.getUriForFile(this,
