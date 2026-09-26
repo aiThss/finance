@@ -1,7 +1,7 @@
-# Túi Nhỏ Design System & Aesthetics
+# Heo Nhỏ Design System & Aesthetics
 
 ## I. Định Hướng Thẩm Mỹ Liquid Glass (Liquid Glass Aesthetic Direction)
-Hệ thống giao diện của Túi Nhỏ hướng tới phong cách **Liquid Glass (Kính lỏng quang học)** cao cấp: rực rỡ sắc màu, chiều sâu phân tầng rõ rệt, vát sáng cạnh thủy tinh (specular highlight), phản quang ngầm (ambient mesh) và bảo đảm độ mượt mà tuyệt đối 60–120 FPS trên thiết bị di động.
+Hệ thống giao diện của Heo Nhỏ hướng tới phong cách **Liquid Glass (Kính lỏng quang học)** cao cấp: rực rỡ sắc màu, chiều sâu phân tầng rõ rệt, vát sáng cạnh thủy tinh (specular highlight), phản quang ngầm (ambient mesh) và bảo đảm độ mượt mà tuyệt đối 60–120 FPS trên thiết bị di động.
 
 ---
 

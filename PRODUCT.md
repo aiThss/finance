@@ -1,4 +1,4 @@
-# Túi Nhỏ
+# Heo Nhỏ
 <!-- impeccable:product-schema 1 -->
 ## Platform
 web
@@ -11,7 +11,7 @@ Fast daily entry, trustworthy derived balances, private offline records, underst
 ## Capabilities and Constraints
 Offline core, VND integer arithmetic, JSON/CSV escape hatch, optional Gemini 3.8 Flash via server only. No login or cloud sync in V1. Same web bundle in Android.
 ## Brand Commitments
-User named the app Túi Nhỏ. Explicit dark near-black lightweight ThreeUI-inspired surfaces, quiet restrained accent, mobile bottom sheets and navigation. No GPU decoration.
+User named the app Heo Nhỏ. Explicit dark near-black lightweight surfaces with Liquid Glass elements, quiet restrained accent, mobile bottom sheets and navigation.
 ## Product Principles
 Correct arithmetic; local ownership; deliberate AI consent; few taps; readable Vietnamese.
 ## Accessibility & Inclusion

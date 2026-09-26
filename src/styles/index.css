@@ -1891,6 +1891,242 @@ details.extra-tools[open] summary {
 .more-row > svg {
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   More Page ("Góc của bạn") - Liquid Glass Command Deck
+   ========================================================================== */
+
+.more-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.vault-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+  margin-bottom: 20px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  width: fit-content;
+  max-width: 100%;
+}
+
+:root[data-theme="light"] .vault-banner {
+  background: color-mix(in srgb, var(--accent) 8%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent);
+}
+
+.more-page .more-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--item-color, var(--text-secondary)) 16%, transparent);
+  color: var(--item-color, var(--text-secondary));
+  border: 1px solid color-mix(in srgb, var(--item-color, var(--text-secondary)) 28%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--item-color, var(--text-secondary)) 10%, transparent);
+  flex-shrink: 0;
+  transition:
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 160ms ease;
+}
+
+:root[data-theme="light"] .more-page .more-badge {
+  background: color-mix(in srgb, var(--item-color, var(--text-secondary)) 12%, #ffffff);
+  color: color-mix(in srgb, var(--item-color, var(--text-secondary)) 85%, #000000);
+  border: 1px solid color-mix(in srgb, var(--item-color, var(--text-secondary)) 24%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--item-color, var(--text-secondary)) 12%, transparent);
+}
+
+.more-page .more-badge.aurora {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+    linear-gradient(135deg, #a855f7, #06b6d4, #10b981) border-box;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.22);
+}
+
+:root[data-theme="light"] .more-page .more-badge.aurora {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, #a855f7, #06b6d4, #10b981) border-box;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.18);
+}
+
+.more-page .more-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.more-page .more-row:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="light"] .more-page .more-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.more-page .more-row:hover .more-badge {
+  transform: scale(1.06);
+}
+
+.more-page .more-row:active {
+  transform: scale(0.985);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme="light"] .more-page .more-row:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.more-page .more-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.more-page .more-text strong {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.more-page .more-text small {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.more-page .more-chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition:
+    transform 140ms ease,
+    color 140ms ease;
+}
+
+.more-page .more-row:hover .more-chevron {
+  color: var(--text-primary);
+  transform: translateX(3px);
+}
+
+.more-page details.extra-tools summary::after {
+  content: "4 tiện ích";
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: all 140ms ease;
+}
+
+.more-page details.extra-tools summary:hover::after {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.more-page details.extra-tools[open] summary::after {
+  content: "Thu gọn";
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+.more-page .extra-tools-grid .more-row:last-child {
+  border-bottom: 0;
+}
+
+/* Tablet & Desktop Layout (Command Grid) */
+@media (min-width: 680px) {
+  .more-page .more-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .more-page .more-group .more-row {
+    padding: 22px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    border-bottom: 0;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .more-page .more-group .more-row:last-child {
+    border-right: 0;
+  }
+
+  .more-page .more-group .more-row .more-chevron {
+    position: absolute;
+    top: 22px;
+    right: 18px;
+  }
+
+  .more-page .extra-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .more-page .extra-tools-grid .more-row {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .more-page .extra-tools-grid .more-row:nth-child(odd) {
+    border-right: 1px solid var(--border);
+  }
+
+  .more-page .extra-tools-grid .more-row:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 359px) {
+  .more-page .more-row {
+    padding: 13px 14px;
+    gap: 11px;
+  }
+  .vault-banner {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .more-page .more-badge,
+  .more-page .more-row,
+  .more-page .more-chevron {
+    transition: none !important;
+    transform: none !important;
+  }
+}
 .trash-row {
   display: flex;
   align-items: center;
