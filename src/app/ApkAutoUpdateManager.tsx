@@ -31,8 +31,32 @@ export default function ApkAutoUpdateManager({
   )
     return null;
 
-  // Nội dung button theo phase
-  function renderButton() {
+  // Nội dung subtitle theo phase
+  function renderSubtitle() {
+    switch (phase) {
+      case "available":
+        return "Bản cập nhật mới sẵn sàng";
+      case "starting":
+        return "Đang chuẩn bị tải…";
+      case "downloading":
+        return percent != null ? `Đang tải ${percent}%…` : "Đang tải bản cập nhật…";
+      case "paused":
+        return "Đang chờ kết nối mạng…";
+      case "downloaded":
+        return "Đã tải xong · Nhấn để khởi động lại";
+      case "installing":
+        return "Đang cài đặt… Sẽ tự mở lại sau giây lát";
+      case "needs_permission":
+        return "Cần cấp quyền cài đặt APK trong Cài đặt";
+      case "failed":
+        return error || "Không cài được cập nhật. Thử lại.";
+      default:
+        return null;
+    }
+  }
+
+  // Nội dung action theo phase
+  function renderAction() {
     switch (phase) {
       case "available":
         return (
@@ -48,17 +72,9 @@ export default function ApkAutoUpdateManager({
       case "downloading":
       case "paused":
         return (
-          <button
-            type="button"
-            className="apk-btn-compact-update"
-            disabled
-          >
-            {phase === "paused"
-              ? "Đang chờ…"
-              : percent != null
-                ? `Đang tải ${percent}%`
-                : "Đang tải…"}
-          </button>
+          <span className="apk-percent-pill" aria-live="polite">
+            {phase === "paused" ? "Chờ" : percent != null ? `${percent}%` : "Tải…"}
+          </span>
         );
       case "downloaded":
         return (
@@ -67,7 +83,7 @@ export default function ApkAutoUpdateManager({
             className="apk-btn-compact-update"
             onClick={() => void triggerInstall()}
           >
-            Cập nhật ngay
+            Khởi động lại
           </button>
         );
       case "installing":
@@ -102,64 +118,60 @@ export default function ApkAutoUpdateManager({
     phase === "paused";
 
   const showDismiss =
-    phase === "available" || phase === "failed";
+    phase === "available" || phase === "downloaded" || phase === "failed";
 
   return (
     <aside className="apk-update-bottom-card" role="alert" aria-live="polite">
-      {/* Icon logo */}
-      <div className="apk-bottom-icon">
-        <TuiNhoMark size={18} />
-      </div>
-
-      {/* Info */}
-      <div className="apk-bottom-info">
-        <div className="apk-bottom-title">
-          <strong>Heo Nhỏ{newVersion ? ` v${newVersion}` : ""}</strong>
-          {phase === "available" && (
-            <span className="apk-version-badge">Mới</span>
-          )}
+      <div className="apk-bottom-main-row">
+        {/* Icon logo */}
+        <div className="apk-bottom-icon">
+          <TuiNhoMark size={18} />
         </div>
 
-        {/* Progress bar worm — chỉ khi đang tải */}
-        {showProgress && (
+        {/* Info */}
+        <div className="apk-bottom-info">
+          <div className="apk-bottom-title">
+            <strong>Heo Nhỏ{newVersion ? ` v${newVersion}` : ""}</strong>
+            {phase === "available" && (
+              <span className="apk-version-badge">Mới</span>
+            )}
+          </div>
+          <span
+            className="apk-bottom-sub"
+            style={phase === "failed" ? { color: "var(--danger)" } : undefined}
+          >
+            {renderSubtitle()}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="apk-bottom-actions">
+          {renderAction()}
+
+          {showDismiss && (
+            <button
+              type="button"
+              className="apk-btn-compact-dismiss"
+              onClick={dismiss}
+              aria-label="Để sau"
+              title="Để sau"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar worm — toàn chiều rộng thẻ ở dưới */}
+      {showProgress && (
+        <div className="apk-bottom-progress-track">
           <PixelWavyProgress
             percent={percent}
             className="apk-worm-bar"
             aria-label="Tiến độ tải cập nhật"
           />
-        )}
-
-        {/* Error text khi failed */}
-        {phase === "failed" && error && (
-          <span className="apk-bottom-sub" style={{ color: "var(--danger)" }}>
-            {error}
-          </span>
-        )}
-
-        {/* Trạng thái nhắc nhở permission */}
-        {phase === "needs_permission" && (
-          <span className="apk-bottom-sub">
-            Mở Cài đặt → Cài ứng dụng không rõ nguồn gốc → bật Heo Nhỏ
-          </span>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="apk-bottom-actions">
-        {renderButton()}
-
-        {showDismiss && (
-          <button
-            type="button"
-            className="apk-btn-compact-dismiss"
-            onClick={dismiss}
-            aria-label="Để sau"
-            title="Để sau"
-          >
-            <X size={16} />
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   );
 }

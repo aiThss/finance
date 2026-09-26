@@ -201,14 +201,14 @@ export function ApkUpdates() {
             className="primary"
             onClick={() => void triggerInstall()}
           >
-            Cập nhật ngay
+            Khởi động lại để cập nhật
           </button>
         );
       case "installing":
       case "needs_permission":
         return (
           <button type="button" className="primary" disabled>
-            Đang cài đặt…
+            Đang cài đặt… Ứng dụng sẽ tự mở lại
           </button>
         );
       case "installed":

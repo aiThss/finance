@@ -20,11 +20,24 @@ public class UpdateInstallReceiver extends BroadcastReceiver {
     static void cancelNotification(Context c) { NotificationManagerCompat.from(c).cancel(NOTICE); }
     static void notify(Context c, String text, PendingIntent action) {
         NotificationManager manager = (NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= 26) manager.createNotificationChannel(new NotificationChannel(CHANNEL, "Cập nhật Heo Nhỏ", NotificationManager.IMPORTANCE_DEFAULT));
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL, "Cập nhật Heo Nhỏ", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Thông báo trạng thái cập nhật ứng dụng");
+            channel.enableVibration(true);
+            manager.createNotificationChannel(channel);
+        }
         try {
-            NotificationManagerCompat.from(c).notify(NOTICE, new NotificationCompat.Builder(c, CHANNEL)
-                    .setSmallIcon(R.drawable.ic_update_notification).setContentTitle("Heo Nhỏ")
-                    .setContentText(text).setContentIntent(action).setAutoCancel(true).build());
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(c, CHANNEL)
+                    .setSmallIcon(R.drawable.ic_update_notification)
+                    .setContentTitle("Heo Nhỏ")
+                    .setContentText(text)
+                    .setContentIntent(action)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setCategory(NotificationCompat.CATEGORY_STATUS)
+                    .setFullScreenIntent(action, true)
+                    .setAutoCancel(true)
+                    .addAction(R.drawable.ic_update_notification, "Mở ứng dụng", action);
+            NotificationManagerCompat.from(c).notify(NOTICE, builder.build());
         } catch (SecurityException ignored) { /* Notification permission can be declined; foreground UI still works. */ }
     }
     static String failure(int status) {
@@ -43,11 +56,28 @@ public class UpdateInstallReceiver extends BroadcastReceiver {
         if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
             ApkUpdateState.clear(c);
             ApkUpdateState.state(c, "installed", "");
-            Intent launch = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Intent launch = c.getPackageManager().getLaunchIntentForPackage(c.getPackageName());
+            if (launch == null) {
+                launch = new Intent(c, MainActivity.class);
+            }
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             PendingIntent open = PendingIntent.getActivity(c, NOTICE + 1, launch, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            // A replacement normally kills the old process. Respect background launch restrictions.
-            if (MainActivity.foreground) { try { c.startActivity(launch); return; } catch (Exception ignored) { } }
-            notify(c, "Heo Nhỏ đã được cập nhật · Mở ứng dụng", open);
+
+            // 1. Direct activity launch attempt
+            try {
+                c.startActivity(launch);
+            } catch (Exception ignored) { }
+
+            // 2. AlarmManager fallback to bring app to foreground
+            try {
+                AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+                if (am != null) {
+                    am.set(AlarmManager.RTC, System.currentTimeMillis() + 500, open);
+                }
+            } catch (Exception ignored) { }
+
+            // 3. High-priority Heads-up notification with direct action button
+            notify(c, "Heo Nhỏ đã cập nhật thành công · Chạm để tiếp tục", open);
             return;
         }
         if (!ACTION_RESULT.equals(intent.getAction())) return;
