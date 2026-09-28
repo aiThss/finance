@@ -154,6 +154,7 @@ test("mobile widths, themes and desktop have no horizontal overflow", async ({
   });
 });
 test("AI draft needs explicit review and save", async ({ page }) => {
+  await account(page, "Tiền mặt", "2000000");
   await account(page, "MoMo", "1000000");
   await page.goto("/settings");
   await page.getByRole("switch", { name: /Bật Gemini/ }).click();
@@ -184,12 +185,36 @@ test("AI draft needs explicit review and save", async ({ page }) => {
   await expect(page.getByRole("dialog").getByLabel("Số tiền")).toHaveValue(
     "55.000",
   );
+  const accountField = page
+    .getByRole("dialog")
+    .locator(".select-field")
+    .first();
+  await expect(accountField.locator(".select-label-text")).toHaveText("MoMo");
+  await accountField.click();
+  await page.locator(".select-option-row", { hasText: "Tiền mặt" }).click();
   await page
     .getByRole("button", { name: "Lưu giao dịch", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.goto("/");
-  await expect(page.locator(".hero-amount")).toContainText("945.000");
+  await expect(page.locator(".hero-amount")).toContainText("2.945.000");
+  await page.goto("/transactions");
+  const transaction = page.getByRole("button", { name: /Phở AI/ });
+  await expect(transaction).toContainText("Tiền mặt");
+  await transaction.click();
+  const editedAccountField = page
+    .getByRole("dialog")
+    .locator(".select-field")
+    .first();
+  await expect(editedAccountField.locator(".select-label-text")).toHaveText(
+    "Tiền mặt",
+  );
+  await editedAccountField.click();
+  await page.locator(".select-option-row", { hasText: "MoMo" }).click();
+  await page
+    .getByRole("button", { name: "Lưu giao dịch", exact: true })
+    .click();
+  await expect(transaction).toContainText("MoMo");
 });
 test("discard confirmation and browser back keep unsaved forms safe", async ({
   page,
@@ -210,6 +235,25 @@ test("discard confirmation and browser back keep unsaved forms safe", async ({
   await page.goBack();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".hero-amount")).toContainText("1.000.000");
+});
+
+test("floating AI launcher can be moved and then opened", async ({ page }) => {
+  await page.goto("/");
+  const launcher = page.getByRole("button", { name: "Mở trợ lý AI" });
+  const before = await launcher.boundingBox();
+  expect(before).toBeTruthy();
+  await page.mouse.move(
+    before!.x + before!.width / 2,
+    before!.y + before!.height / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(82, 170, { steps: 8 });
+  await page.mouse.up();
+  await expect(page).toHaveURL(/\/$/);
+  const after = await launcher.boundingBox();
+  expect(after!.x).not.toBeCloseTo(before!.x, 0);
+  await launcher.click();
+  await expect(page).toHaveURL(/\/ai$/);
 });
 
 test("calm navigation survives rapid tab changes and respects reduced motion", async ({

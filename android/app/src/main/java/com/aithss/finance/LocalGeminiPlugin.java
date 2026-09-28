@@ -93,7 +93,7 @@ public class LocalGeminiPlugin extends Plugin {
             try {
                 String key = readKey();
                 if (key == null) { call.reject("Nhập Gemini API key của bạn trong Cài đặt trước."); return; }
-                String endpoint = check ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite" : "https://generativelanguage.googleapis.com/v1beta/interactions";
+                String endpoint = check ? "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash" : "https://generativelanguage.googleapis.com/v1beta/interactions";
                 connection = (HttpsURLConnection) new URL(endpoint).openConnection();
                 connection.setInstanceFollowRedirects(false);
                 connection.setConnectTimeout(10000);

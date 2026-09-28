@@ -49,7 +49,7 @@ describe("Gemini proxy contract", () => {
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ draft });
-    expect(params.model).toBe("gemini-3.5-flash-lite");
+    expect(params.model).toBe("gemini-3.8-flash");
     expect(params.store).toBe(false);
     expect(params.generation_config.thinking_level).toBe("low");
     expect(res.headers.get("cache-control")).toBe("no-store");
@@ -132,6 +132,10 @@ describe("Gemini proxy contract", () => {
       mime_type: "image/png",
     });
     expect(params.input[0].text).not.toContain("aGVsbG8=");
+    expect(params.generation_config.thinking_level).toBe("medium");
+    expect(params.system_instruction).toContain("VND has no minor unit");
+    expect(params.response_format.schema.properties.amountMinor.description)
+      .toContain("never append zeros");
   });
   it("insights uses medium thinking with compact deterministic totals", async () => {
     let params;

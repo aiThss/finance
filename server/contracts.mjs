@@ -13,7 +13,11 @@ export const draftJsonSchema = {
   type: "object",
   properties: {
     type: { type: "string", enum: ["expense", "income"] },
-    amountMinor: { type: "integer" },
+    amountMinor: {
+      type: "integer",
+      description:
+        "Exact whole Vietnamese dong shown or stated. VND has no minor unit; never append zeros or multiply by 10, 100, or 1000.",
+    },
     title: { type: "string" },
     suggestedCategory: { type: ["string", "null"] },
     suggestedAccount: { type: ["string", "null"] },

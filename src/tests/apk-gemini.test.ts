@@ -69,11 +69,20 @@ describe("personal Gemini key and output", () => {
     expect(
       interactionBody("parse-transaction", { text: "phở 55k" }).model,
     ).toBe(GEMINI_MODEL);
-    expect(GEMINI_MODEL).toBe("gemini-3.5-flash-lite");
+    expect(GEMINI_MODEL).toBe("gemini-3.8-flash");
     expect(geminiError(403).message).toContain("quyền");
     expect(geminiError(404).message).toContain("Model");
     expect(geminiError(429).message).toContain("hạn mức");
     expect(geminiError(400).message).not.toContain("Key không hợp lệ");
+  });
+  it("treats receipt amounts as exact whole VND", () => {
+    const request = interactionBody("receipt", {
+      image: "aGVsbG8=",
+      mimeType: "image/png",
+    });
+    expect(request.generation_config.thinking_level).toBe("medium");
+    expect(request.system_instruction).toContain("VND has no minor unit");
+    expect(request.system_instruction).toContain("55.000 ₫ means 55000");
   });
   it("keeps web credentials out of persistent storage", async () => {
     await saveLocalKey("test-only-personal-key-1234567890");

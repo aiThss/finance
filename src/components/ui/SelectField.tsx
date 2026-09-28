@@ -23,6 +23,7 @@ export function SelectField({
   defaultValue,
   onChange,
   disabled,
+  ref: forwardedRef,
   ...props
 }: ComponentPropsWithRef<"select">) {
   const [open, setOpen] = useState(false);
@@ -78,11 +79,30 @@ export function SelectField({
 
   const activeValue = value !== undefined ? String(value) : internalValue;
 
+  const setSelectRef = useCallback(
+    (node: HTMLSelectElement | null) => {
+      selectRef.current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    },
+    [forwardedRef],
+  );
+
   useEffect(() => {
     if (value !== undefined) {
       setInternalValue(String(value));
     }
   }, [value]);
+
+  // Form libraries can set an uncontrolled select through their ref after the
+  // first render. Mirror that real DOM value so the custom trigger never falls
+  // back to the first option while the submitted form holds another account.
+  useEffect(() => {
+    if (value !== undefined) return;
+    const domValue = selectRef.current?.value;
+    if (domValue !== undefined && domValue !== internalValue)
+      setInternalValue(domValue);
+  });
 
   const activeOption =
     options.find((o) => o.value === activeValue) ?? options[0];
@@ -156,7 +176,7 @@ export function SelectField({
        * – Keyboard navigation handled via onKeyDown
        */}
       <select
-        ref={selectRef}
+        ref={setSelectRef}
         value={activeValue}
         onChange={(e) => {
           const val = e.target.value;

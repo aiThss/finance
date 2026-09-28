@@ -35,6 +35,7 @@ import { NativeSystemBars } from "./NativeSystemBars";
 import { initialize } from "../db/seed";
 import { AppContext, type Draft } from "./context";
 import { TransactionSheet } from "../features/transactions/TransactionSheet";
+import { FloatingAIButton } from "./FloatingAIButton";
 export class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
@@ -188,6 +189,7 @@ function Shell() {
         <AppRouter />
       </main>
       <BottomNavigation onAdd={openTransaction} />
+      <FloatingAIButton />
       {toast && (
         <div className="toast" role="status">
           <span>{toast.text}</span>

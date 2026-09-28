@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
-export const GEMINI_MODEL = "gemini-3.5-flash-lite";
+export const GEMINI_MODEL = "gemini-3.8-flash";
 const native = registerPlugin<{
   status(): Promise<{ configured: boolean }>;
   save(options: { key: string }): Promise<void>;

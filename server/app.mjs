@@ -138,7 +138,7 @@ export function createApp({ env = process.env, generate } = {}) {
               });
         const result = await run(
           {
-            model: env.GEMINI_MODEL || "gemini-3.5-flash-lite",
+            model: env.GEMINI_MODEL || "gemini-3.8-flash",
             store: false,
             input:
               kind === "receipt"
@@ -154,9 +154,14 @@ export function createApp({ env = process.env, generate } = {}) {
             system_instruction:
               kind === "insights"
                 ? "Trả lời tiếng Việt ngắn gọn về thu chi cá nhân. Số liệu đã tính chính xác tại thiết bị. Chỉ diễn giải số liệu đã cung cấp, không suy đoán giao dịch. Không đưa lời khuyên đầu tư."
-                : "Extract a Vietnamese VND transaction. Return JSON only. Dates are ISO with timezone. Resolve relative dates from context.now and context.timezone. Account/category names must come from the provided lists or null.",
+                : `Extract a Vietnamese VND transaction. Return JSON only. Dates are ISO with timezone. Resolve relative dates from context.now and context.timezone. Account/category names must come from the provided lists or null. amountMinor is the exact whole number of Vietnamese đồng, not cents: VND has no minor unit. Never append zeros or multiply the visible amount by 10, 100, or 1000.${
+                    kind === "receipt"
+                      ? " For an image, read the final amount actually paid or total due exactly as printed; 55.000 ₫ means 55000. Do not use order IDs, phone numbers, subtotals, discounts, points, or timestamps."
+                      : ""
+                  }`,
             generation_config: {
-              thinking_level: kind === "insights" ? "medium" : "low",
+              thinking_level:
+                kind === "insights" || kind === "receipt" ? "medium" : "low",
               max_output_tokens: 2500,
             },
             ...(kind === "insights"

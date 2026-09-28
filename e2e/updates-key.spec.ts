@@ -72,8 +72,8 @@ test("personal key goes directly to Google, clears after reload, and is removabl
     async (route) => {
       expect(route.request().headers()["x-goog-api-key"]).toBe(key);
       expect(route.request().url()).not.toContain(key);
-      expect(route.request().url()).toContain("models/gemini-3.5-flash-lite");
-      await route.fulfill({ json: { name: "models/gemini-3.5-flash-lite" } });
+      expect(route.request().url()).toContain("models/gemini-3.8-flash");
+      await route.fulfill({ json: { name: "models/gemini-3.8-flash" } });
     },
   );
   await page.goto("/settings");
@@ -113,7 +113,7 @@ test("personal Gemini creates only a reviewed draft and never calls the proxy", 
     (route) => {
       expect(route.request().postDataJSON().store).toBe(false);
       expect(route.request().postDataJSON().model).toBe(
-        "gemini-3.5-flash-lite",
+        "gemini-3.8-flash",
       );
       return route.fulfill({
         json: {
