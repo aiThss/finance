@@ -370,7 +370,7 @@ export function TransactionSheet({
                       >
                         <CategoryIcon name={c.icon} />
                       </span>
-                      <span>{c.name}</span>
+                      <span className="category-name">{c.name}</span>
                     </button>
                   ))}
               </div>

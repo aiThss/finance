@@ -138,7 +138,7 @@ export function createApp({ env = process.env, generate } = {}) {
               });
         const result = await run(
           {
-            model: env.GEMINI_MODEL || "gemini-3.8-flash",
+            model: env.GEMINI_MODEL || "gemini-3.5-flash-lite",
             store: false,
             input:
               kind === "receipt"

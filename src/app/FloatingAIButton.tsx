@@ -119,8 +119,7 @@ export function FloatingAIButton() {
         navigate("/ai");
       }}
     >
-      <Sparkles size={23} strokeWidth={2} />
-      <span>AI</span>
+      <Sparkles size={31} strokeWidth={2.15} aria-hidden="true" />
     </button>
   );
 }

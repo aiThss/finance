@@ -19,7 +19,7 @@
 - Danh mục riêng, ngân sách tháng, lịch thu chi chờ xác nhận từng kỳ.
 - Báo cáo thu chi, dòng tiền, danh mục/cửa hàng, lịch sử tổng số dư.
 - JSON sao lưu/khôi phục toàn bộ có kiểm tra và xác nhận; CSV giao dịch.
-- Gemini 3.8 Flash nhập bằng lời, đọc ảnh hóa đơn và giải thích số liệu tổng hợp. AI chỉ đề xuất; phải duyệt và lưu trong form giao dịch.
+- Gemini 3.5 Flash-Lite nhập bằng lời, đọc ảnh hóa đơn và giải thích số liệu tổng hợp. AI chỉ đề xuất; phải duyệt và lưu trong form giao dịch.
 - Giao diện tối/sáng/theo hệ thống, ẩn tiền, cài như PWA, hoạt động ngoại tuyến sau lần tải đầu.
 
 ## Chạy web
@@ -79,7 +79,7 @@ Danh sách giao dịch chia trang 60 mục để giới hạn số hàng DOM; b�
 
 Android lưu key mã hóa AES-GCM bằng Android Keystore trong vùng riêng của app; không xuất key ra JavaScript sau khi lưu, không đưa vào JSON backup, không có key trong APK. Bridge tắt logging để tránh ghi nội dung key lúc nhập. Yêu cầu HTTPS đi thẳng đến endpoint cố định của Google; không chuyển tiếp key qua backend và không dùng key trong URL. Xóa key trong Cài đặt chỉ xóa trên máy; muốn thu hồi hoàn toàn thì xóa tại AI Studio. Web giữ key cá nhân trong bộ nhớ tab, cần nhập lại khi reload. Thiết bị hoặc trang web bị xâm nhập vẫn có thể sử dụng key; mã hóa lưu trữ không thay thế bảo vệ thiết bị.
 
-Dùng Gemini 3.8 Flash Interactions API với `store: false`. Người dùng xác nhận trước khi gửi nội dung/ảnh hoặc số liệu tổng hợp; ảnh tối đa 4 MB. Kết quả phải qua schema và màn hình duyệt trước khi lưu giao dịch. Chính sách dữ liệu/quota của Google vẫn áp dụng. Kiểm thử dùng key giả và phản hồi mock; cần key của người dùng để kiểm chứng một yêu cầu AI thành công.
+Dùng Gemini 3.5 Flash-Lite Interactions API với `store: false`. Người dùng xác nhận trước khi gửi nội dung/ảnh hoặc số liệu tổng hợp; ảnh tối đa 4 MB. Kết quả phải qua schema và màn hình duyệt trước khi lưu giao dịch. Chính sách dữ liệu/quota của Google vẫn áp dụng. Kiểm thử dùng key giả và phản hồi mock; cần key của người dùng để kiểm chứng một yêu cầu AI thành công.
 
 Proxy Express cũ vẫn dành cho triển khai web có key phía server (`GEMINI_API_KEY`, `GEMINI_MODEL`, `ALLOWED_ORIGINS`). Không có key cá nhân thì web dùng proxy; Android luôn dùng key cá nhân. `VITE_API_BASE_URL` chỉ là URL proxy tùy chọn, không cần cho APK. Không đặt key vào biến `VITE_*` hoặc commit credential.
 

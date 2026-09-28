@@ -28,7 +28,7 @@ Trong mục Environment, lưu các biến runtime sau; thay domain bằng domain
 NODE_ENV=production
 PORT=3000
 ALLOWED_ORIGINS=https://finance.tenmiencuaban.com
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_API_KEY=
 AI_ACCESS_TOKEN=
 ```

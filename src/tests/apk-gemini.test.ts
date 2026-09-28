@@ -69,7 +69,7 @@ describe("personal Gemini key and output", () => {
     expect(
       interactionBody("parse-transaction", { text: "phở 55k" }).model,
     ).toBe(GEMINI_MODEL);
-    expect(GEMINI_MODEL).toBe("gemini-3.8-flash");
+    expect(GEMINI_MODEL).toBe("gemini-3.5-flash-lite");
     expect(geminiError(403).message).toContain("quyền");
     expect(geminiError(404).message).toContain("Model");
     expect(geminiError(429).message).toContain("hạn mức");
