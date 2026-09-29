@@ -116,7 +116,7 @@ test.describe("touch choices", () => {
       name: "Tài khoản",
       exact: true,
     });
-    await account.selectOption({ label: "Ví cảm ứng" });
+    await account.selectOption({ index: 0 });
     await expect(account).toHaveCSS("text-decoration-line", "none");
     await expect(account).toHaveCSS("appearance", "none");
     await expect(nav).toHaveCSS("backdrop-filter", "none");

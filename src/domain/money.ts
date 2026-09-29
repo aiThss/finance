@@ -105,6 +105,20 @@ export function accountBalances(
     ]),
   );
 }
+export function openingBalanceForCurrentBalance(
+  account: Account,
+  transactions: Transaction[],
+  currentBalanceMinor: number,
+) {
+  const currentBalance = accountBalances([account], transactions).get(
+    account.id,
+  )!;
+  return safeMoney(
+    BigInt(account.openingBalanceMinor) +
+      BigInt(currentBalanceMinor) -
+      BigInt(currentBalance),
+  );
+}
 export const activeAccounts = (accounts: Account[]) =>
   accounts.filter((a) => !a.archived);
 export const balanceService = {

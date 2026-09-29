@@ -13,7 +13,14 @@ import {
   Wallet,
 } from "lucide-react";
 import { useApp } from "../../app/context";
-import { accountBalances, sum, parseMoney, formatAmountInput } from "../../domain/money";
+import {
+  accountBalances,
+  balanceService,
+  formatAmountInput,
+  openingBalanceForCurrentBalance,
+  parseMoney,
+  sum,
+} from "../../domain/money";
 import { accountRepository, now, uid } from "../../db/repositories";
 import type { Account } from "../../domain/schema";
 import {
@@ -158,10 +165,19 @@ function AccountForm({
   onClose: () => void;
 }) {
   const { data, notify } = useApp();
+  const existing = initial.id
+    ? data.accounts.find((account) => account.id === initial.id)
+    : undefined;
   const [name, setName] = useState(initial.name ?? "");
   const [type, setType] = useState<Account["type"]>(initial.type ?? "cash");
-  const [opening, setOpening] = useState(
-    formatAmountInput(String(initial.openingBalanceMinor ?? 0)),
+  const [balance, setBalance] = useState(
+    formatAmountInput(
+      String(
+        existing
+          ? balanceService.getAccountBalance(existing, data.transactions)
+          : (initial.openingBalanceMinor ?? 0),
+      ),
+    ),
   );
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -170,12 +186,19 @@ function AccountForm({
     e.preventDefault();
     setBusy(true);
     try {
+      const enteredBalance = parseMoney(balance);
       const a: Account = {
         id: initial.id ?? uid(),
         name,
         type,
         currency: "VND",
-        openingBalanceMinor: parseMoney(opening),
+        openingBalanceMinor: existing
+          ? openingBalanceForCurrentBalance(
+              existing,
+              data.transactions,
+              enteredBalance,
+            )
+          : enteredBalance,
         archived: initial.archived ?? false,
         order: initial.order ?? data.accounts.length,
         createdAt: initial.createdAt ?? now(),
@@ -225,17 +248,19 @@ function AccountForm({
           </SelectField>
         </label>
         <label>
-          Số dư ban đầu (VND)
+          {existing ? "Số dư hiện tại (VND)" : "Số dư ban đầu (VND)"}
           <input
             inputMode="decimal"
             required
-            value={opening}
-            onChange={(e) => setOpening(formatAmountInput(e.target.value))}
+            value={balance}
+            onChange={(e) => setBalance(formatAmountInput(e.target.value))}
           />
         </label>
         <p className="hint">
-          Nhập số âm nếu đây là khoản nợ thẻ tín dụng. Sửa số dư ban đầu sẽ thay
-          đổi số dư toàn bộ lịch sử.
+          Nhập số âm nếu đây là khoản nợ thẻ tín dụng.{" "}
+          {existing
+            ? "Số dư hiển thị sẽ khớp với số thực tế bạn nhập; lịch sử giao dịch được giữ nguyên."
+            : "Số dư sẽ được dùng làm mốc trước các giao dịch mới."}
         </p>
         <ErrorText error={error} />
         <footer className="sheet-footer">

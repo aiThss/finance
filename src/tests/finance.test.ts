@@ -16,6 +16,7 @@ import {
   parseMoney,
   formatAmountInput,
   nextOccurrence,
+  openingBalanceForCurrentBalance,
 } from "../domain/money";
 import {
   exportBackup,
@@ -85,6 +86,25 @@ describe("Deterministic money", () => {
       makeTransaction({ type: "adjustment", amountMinor: -5000 }),
     ];
     expect(balanceService.getAccountBalance(a, ts)).toBe(125000);
+  });
+  it("converts an edited current balance without counting history twice", () => {
+    const account = { ...a, openingBalanceMinor: 50407 };
+    const transactions = [
+      makeTransaction({ accountId: account.id, amountMinor: 76876 }),
+    ];
+    const openingBalanceMinor = openingBalanceForCurrentBalance(
+      account,
+      transactions,
+      50407,
+    );
+
+    expect(openingBalanceMinor).toBe(-26469);
+    expect(
+      balanceService.getAccountBalance(
+        { ...account, openingBalanceMinor },
+        transactions,
+      ),
+    ).toBe(50407);
   });
   it("one transfer moves both balances without inflating reports", () => {
     const t = makeTransaction({

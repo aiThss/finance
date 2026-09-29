@@ -292,25 +292,32 @@ export default function AI() {
                 onClick={() => {
                   const normalize = (s: string) =>
                     s.trim().toLocaleLowerCase("vi");
-                  openTransaction({
-                    type: draft.type,
-                    amountMinor: draft.amountMinor,
-                    title: draft.title,
-                    occurredAt: draft.occurredAt,
-                    accountId: data.accounts.find(
-                      (a) =>
-                        !a.archived &&
-                        normalize(a.name) ===
-                          normalize(draft.suggestedAccount ?? ""),
-                    )?.id,
-                    categoryId: data.categories.find(
-                      (c) =>
-                        !c.archived &&
-                        c.type === draft.type &&
-                        normalize(c.name) ===
-                          normalize(draft.suggestedCategory ?? ""),
-                    )?.id,
-                  });
+                  openTransaction(
+                    {
+                      type: draft.type,
+                      amountMinor: draft.amountMinor,
+                      title: draft.title,
+                      occurredAt: draft.occurredAt,
+                      accountId: data.accounts.find(
+                        (a) =>
+                          !a.archived &&
+                          normalize(a.name) ===
+                            normalize(draft.suggestedAccount ?? ""),
+                      )?.id,
+                      categoryId: data.categories.find(
+                        (c) =>
+                          !c.archived &&
+                          c.type === draft.type &&
+                          normalize(c.name) ===
+                            normalize(draft.suggestedCategory ?? ""),
+                      )?.id,
+                    },
+                    () => {
+                      setText("");
+                      setImage(null);
+                      setDraft(null);
+                    },
+                  );
                 }}
               >
                 Kiểm tra & chỉnh sửa trước khi lưu

@@ -64,7 +64,10 @@ export class ErrorBoundary extends Component<
 }
 function Shell() {
   const [ready, setReady] = useState(false);
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const [editor, setEditor] = useState<{
+    draft: Draft;
+    onSaved?: () => void;
+  } | null>(null);
   const [initError, setInitError] = useState("");
   const [toast, setToast] = useState<{
     text: string;
@@ -99,7 +102,11 @@ function Shell() {
   }, [toast]);
   useEffect(() => {
     if (ready && params.has("add")) {
-      setDraft({ type: params.get("add") === "income" ? "income" : "expense" });
+      setEditor({
+        draft: {
+          type: params.get("add") === "income" ? "income" : "expense",
+        },
+      });
       setParams({}, { replace: true });
     }
   }, [ready, params, setParams]);
@@ -130,7 +137,10 @@ function Shell() {
       setToast({ text, action, label }),
     [],
   );
-  const openTransaction = useCallback((d: Draft = {}) => setDraft(d), []);
+  const openTransaction = useCallback(
+    (draft: Draft = {}, onSaved?: () => void) => setEditor({ draft, onSaved }),
+    [],
+  );
   const actions = useMemo(
     () => ({ notify, openTransaction }),
     [notify, openTransaction],
@@ -170,7 +180,7 @@ function Shell() {
             );
           })}
         </nav>
-        <button className="primary" onClick={() => setDraft({})}>
+        <button className="primary" onClick={() => setEditor({ draft: {} })}>
           <Plus size={18} />
           Ghi giao dịch
         </button>
@@ -209,17 +219,21 @@ function Shell() {
         </div>
       )}
       {!Capacitor.isNativePlatform() && (
-        <PwaUpdateManager sheetOpen={!!draft} />
+        <PwaUpdateManager sheetOpen={!!editor} />
       )}
       {Capacitor.getPlatform() === "android" && (
-        <ApkAutoUpdateManager sheetOpen={!!draft} />
+        <ApkAutoUpdateManager sheetOpen={!!editor} />
       )}
-      {draft && (
+      {editor && (
         <FinanceScope
           tables={["accounts", "categories", "transactions", "settings"]}
           recentLimit={100}
         >
-          <TransactionSheet draft={draft} onClose={() => setDraft(null)} />
+          <TransactionSheet
+            draft={editor.draft}
+            onSaved={editor.onSaved}
+            onClose={() => setEditor(null)}
+          />
         </FinanceScope>
       )}
     </AppContext.Provider>

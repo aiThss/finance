@@ -32,6 +32,33 @@ async function entry(
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 }
+test("editing an account sets its current displayed balance", async ({
+  page,
+}) => {
+  await account(page, "Techcombank", "50407");
+  await page.goto("/");
+  await entry(page, "Thu nhập", "76876", "Biến động lịch sử");
+  await page.goto("/accounts");
+  await expect(page.locator(".account-card")).toContainText("127.283");
+
+  await page.getByRole("button", { name: "Sửa", exact: true }).click();
+  await expect(page.getByLabel("Số dư hiện tại (VND)")).toHaveValue("127.283");
+  await page.getByLabel("Số dư hiện tại (VND)").fill("50407");
+  await page
+    .getByRole("button", { name: "Lưu tài khoản", exact: true })
+    .click();
+
+  await expect(page.locator(".account-card")).toContainText("50.407");
+  await expect(page.locator(".total-line")).toContainText("50.407");
+
+  await page
+    .getByRole("button", { name: "Thêm giao dịch", exact: true })
+    .last()
+    .click();
+  await expect(
+    page.getByRole("dialog").locator(".select-label-text").first(),
+  ).toContainText("Techcombank · 50.407");
+});
 test("money lifecycle, budgets, recurring, restore and offline shell", async ({
   page,
   context,
@@ -189,13 +216,17 @@ test("AI draft needs explicit review and save", async ({ page }) => {
     .getByRole("dialog")
     .locator(".select-field")
     .first();
-  await expect(accountField.locator(".select-label-text")).toHaveText("MoMo");
+  await expect(accountField.locator(".select-label-text")).toContainText(
+    "MoMo",
+  );
   await accountField.click();
   await page.locator(".select-option-row", { hasText: "Tiền mặt" }).click();
   await page
     .getByRole("button", { name: "Lưu giao dịch", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("textbox")).toHaveValue("");
+  await expect(page.getByText("Bản nháp · chưa lưu")).toHaveCount(0);
   await page.goto("/");
   await expect(page.locator(".hero-amount")).toContainText("2.945.000");
   await page.goto("/transactions");
@@ -206,7 +237,7 @@ test("AI draft needs explicit review and save", async ({ page }) => {
     .getByRole("dialog")
     .locator(".select-field")
     .first();
-  await expect(editedAccountField.locator(".select-label-text")).toHaveText(
+  await expect(editedAccountField.locator(".select-label-text")).toContainText(
     "Tiền mặt",
   );
   await editedAccountField.click();

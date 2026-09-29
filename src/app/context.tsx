@@ -3,7 +3,7 @@ import { useFinanceData } from "../db/queries";
 import type { Transaction } from "../domain/schema";
 export type Draft = Partial<Transaction>;
 export interface AppContextValue {
-  openTransaction: (draft?: Draft) => void;
+  openTransaction: (draft?: Draft, onSaved?: () => void) => void;
   notify: (text: string, action?: () => void, label?: string) => void;
 }
 export const AppContext = createContext<AppContextValue | null>(null);

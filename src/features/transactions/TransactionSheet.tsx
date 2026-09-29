@@ -10,7 +10,12 @@ import { Sheet, dismissSheet } from "../../components/ui/Sheet";
 import { ErrorText, message } from "../../components/ui/Common";
 import { CategoryIcon } from "../../components/ui/Icon";
 import { now, uid, transactionRepository } from "../../db/repositories";
-import { parseMoney, formatAmountInput } from "../../domain/money";
+import {
+  accountBalances,
+  formatAmountInput,
+  money,
+  parseMoney,
+} from "../../domain/money";
 import { vi } from "../../locales/vi";
 import type { Transaction } from "../../domain/schema";
 interface FormValues {
@@ -38,9 +43,11 @@ const categoryPriority = (name: string) => {
 export function TransactionSheet({
   draft,
   onClose,
+  onSaved,
 }: {
   draft: Draft;
   onClose: () => void;
+  onSaved?: () => void;
 }) {
   const { data, notify } = useApp();
   const [type, setType] = useState<Transaction["type"]>(
@@ -54,6 +61,10 @@ export function TransactionSheet({
     (a) =>
       !a.archived ||
       [draft.accountId, draft.fromAccountId, draft.toAccountId].includes(a.id),
+  );
+  const balances = useMemo(
+    () => accountBalances(data.accounts, data.transactions),
+    [data.accounts, data.transactions],
   );
   const {
     register,
@@ -174,6 +185,7 @@ export function TransactionSheet({
         ? transactionRepository.update(t)
         : transactionRepository.create(t));
       notify(draft.id ? "Đã cập nhật giao dịch" : "Đã lưu giao dịch");
+      onSaved?.();
       setClean(true);
       if (another) {
         reset({
@@ -315,7 +327,7 @@ export function TransactionSheet({
               >
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.name}
+                    {`${a.name} · ${money(balances.get(a.id)!)}`}
                   </option>
                 ))}
               </SelectField>
@@ -330,7 +342,7 @@ export function TransactionSheet({
                 >
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.name}
+                      {`${a.name} · ${money(balances.get(a.id)!)}`}
                     </option>
                   ))}
                 </SelectField>
