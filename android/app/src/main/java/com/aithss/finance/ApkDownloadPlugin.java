@@ -2,18 +2,19 @@ package com.aithss.finance;
 
 import android.Manifest;
 import android.app.DownloadManager;
-import android.app.PendingIntent;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInstaller;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import androidx.core.content.FileProvider;
 import com.getcapacitor.*;
 import com.getcapacitor.annotation.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.*;
 
 @CapacitorPlugin(name = "ApkDownload", permissions = {
@@ -71,13 +72,14 @@ public class ApkDownloadPlugin extends Plugin {
             }
             return out;
         }
-        if ("installing".equals(saved) || "pending_user_action".equals(saved)) {
+        if ("installing".equals(saved)) {
             if (getContext().getPackageManager().getPackageInstaller().getSessionInfo(p.getInt("sessionId", -1)) == null) {
                 ApkUpdateState.state(getContext(), "failed", "Cài đặt chưa hoàn tất. Thử lại.");
                 out.put("state", "failed").put("reason", "Cài đặt chưa hoàn tất. Thử lại.");
             }
             return out;
         }
+        if ("pending_user_action".equals(saved)) return out;
         if ("failed".equals(saved)) return out;
         long id = p.getLong("downloadId", -1);
         // Recover an enqueue interrupted before its ID could be persisted.
@@ -138,11 +140,9 @@ public class ApkDownloadPlugin extends Plugin {
     @PermissionCallback private void notificationResult(PluginCall call) { installReady(call); }
     private void installReady(PluginCall call) {
         worker.execute(() -> {
-            int sessionId = -1;
             try {
                 String current = status().getString("state");
-                if ("installing".equals(current)) { call.resolve(new JSObject().put("state", "installing")); return; }
-                if ("pending_user_action".equals(current) && UpdateInstallReceiver.resumeConfirmation(getContext())) {
+                if ("installing".equals(current) || "pending_user_action".equals(current)) {
                     call.resolve(new JSObject().put("state", "pending_user_action")); return;
                 }
                 ApkUpdateState.verify(getContext());
@@ -155,29 +155,23 @@ public class ApkDownloadPlugin extends Plugin {
                         } catch (Exception e) { call.reject("Không mở được quyền cài đặt. Kiểm tra Cài đặt Android."); }
                     }); return;
                 }
-                PackageInstaller installer = getContext().getPackageManager().getPackageInstaller();
-                int oldSession = prefs().getInt("sessionId", -1);
-                if (oldSession != -1) try { installer.abandonSession(oldSession); } catch (Exception ignored) { }
-                PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-                params.setAppPackageName(getContext().getPackageName());
-                params.setSize(ApkUpdateState.file(getContext()).length());
-                if (Build.VERSION.SDK_INT >= 31) params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED);
-                sessionId = installer.createSession(params);
-                try (PackageInstaller.Session session = installer.openSession(sessionId)) {
-                    try (FileInputStream in = new FileInputStream(ApkUpdateState.file(getContext())); OutputStream out = session.openWrite("tui-nho.apk", 0, ApkUpdateState.file(getContext()).length())) {
-                        byte[] buffer = new byte[65536]; int n;
-                        while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
-                        session.fsync(out);
+                File apk = ApkUpdateState.file(getContext());
+                Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", apk);
+                Intent install = new Intent(Intent.ACTION_VIEW)
+                        .setDataAndType(uri, "application/vnd.android.package-archive");
+                install.setClipData(ClipData.newRawUri("tui-nho.apk", uri));
+                install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                ApkUpdateState.state(getContext(), "pending_user_action", "Xác nhận cài đặt trên Android.");
+                getActivity().runOnUiThread(() -> {
+                    try {
+                        getActivity().startActivity(install);
+                        call.resolve(new JSObject().put("state", "pending_user_action"));
+                    } catch (Exception e) {
+                        ApkUpdateState.state(getContext(), "failed", "Không mở được màn hình cài đặt. Thử lại.");
+                        call.reject("Không mở được màn hình cài đặt. Thử lại.");
                     }
-                    Intent result = new Intent(getContext(), UpdateInstallReceiver.class).setAction(UpdateInstallReceiver.ACTION_RESULT);
-                    int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
-                    PendingIntent callback = PendingIntent.getBroadcast(getContext(), sessionId, result, flags);
-                    prefs().edit().putInt("sessionId", sessionId).putString("state", "installing").putString("reason", "").commit();
-                    session.commit(callback.getIntentSender());
-                }
-                call.resolve(new JSObject().put("state", "installing"));
+                });
             } catch (Exception e) {
-                if (sessionId != -1) try { getContext().getPackageManager().getPackageInstaller().abandonSession(sessionId); } catch (Exception ignored) { }
                 try { ApkUpdateState.verify(getContext()); } catch (Exception invalid) { ApkUpdateState.file(getContext()).delete(); }
                 ApkUpdateState.state(getContext(), "failed", "Không cài được cập nhật. Thử lại.");
                 call.reject("Không cài được cập nhật. Thử lại.");

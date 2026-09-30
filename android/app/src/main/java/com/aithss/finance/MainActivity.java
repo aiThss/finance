@@ -7,7 +7,13 @@ import androidx.activity.EdgeToEdge;
 
 public class MainActivity extends BridgeActivity {
     static volatile boolean foreground = false;
-    @Override public void onResume() { super.onResume(); foreground = true; }
+    @Override public void onResume() {
+        super.onResume();
+        foreground = true;
+        if ("pending_user_action".equals(ApkUpdateState.prefs(this).getString("state", ""))) {
+            ApkUpdateState.state(this, "downloaded", "");
+        }
+    }
     @Override public void onPause() { foreground = false; super.onPause(); }
     private int windowBackgroundColor = 0xff0a0e0c;
 
