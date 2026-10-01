@@ -6,6 +6,7 @@ import {
   recurringSchema,
   settingsSchema,
   transactionSchema,
+  moneySchema,
   type Transaction,
   type Account,
   type Category,
@@ -13,7 +14,12 @@ import {
   type RecurringRule,
   type Settings,
 } from "../../domain/schema";
-import { dayKey, nextOccurrence } from "../../domain/money";
+import {
+  accountBalances,
+  dayKey,
+  nextOccurrence,
+  safeMoney,
+} from "../../domain/money";
 export const uid = () => crypto.randomUUID();
 export const now = () => new Date().toISOString();
 async function validateReferences(t: Transaction, previous?: Transaction) {
@@ -88,6 +94,133 @@ export const transactionRepository = {
         [t.title, t.merchant, t.note].some((s) =>
           s?.toLocaleLowerCase("vi").includes(q),
         ),
+    );
+  },
+};
+export interface DailyCloseEntry {
+  accountId: string;
+  endingBalanceMinor: number;
+  expenseMinor: number;
+}
+export const dailyCloseKey = (date: string, accountId: string) =>
+  `${date}:${accountId}`;
+export const dailyCloseRepository = {
+  saveToday: async (entries: DailyCloseEntry[]) => {
+    const date = dayKey(new Date());
+    const occurredAt = new Date(`${date}T23:59:00`).toISOString();
+    return db.transaction(
+      "rw",
+      [db.transactions, db.accounts, db.categories],
+      async () => {
+        const [accounts, categories, transactions] = await Promise.all([
+          db.accounts.toArray(),
+          db.categories.toArray(),
+          db.transactions.toArray(),
+        ]);
+        const activeById = new Map(
+          accounts.filter((account) => !account.archived).map((a) => [a.id, a]),
+        );
+        if (
+          entries.length !== activeById.size ||
+          new Set(entries.map((entry) => entry.accountId)).size !==
+            entries.length ||
+          entries.some((entry) => !activeById.has(entry.accountId))
+        )
+          throw new Error("Cần chốt đủ các tài khoản đang hoạt động.");
+        for (const entry of entries) {
+          moneySchema.parse(entry.endingBalanceMinor);
+          moneySchema.refine((value) => value >= 0).parse(entry.expenseMinor);
+        }
+
+        const keys = new Set(
+          entries.map((entry) => dailyCloseKey(date, entry.accountId)),
+        );
+        const previous = transactions.filter(
+          (transaction) =>
+            transaction.dailyCloseKey && keys.has(transaction.dailyCloseKey),
+        );
+        const baseTransactions = transactions.filter(
+          (transaction) =>
+            !transaction.dailyCloseKey || !keys.has(transaction.dailyCloseKey),
+        );
+        const balances = accountBalances(accounts, baseTransactions);
+        const expenseCategory = categories.find(
+          (category) =>
+            !category.archived &&
+            category.type === "expense" &&
+            category.name === "Khác",
+        );
+        const incomeCategory = categories.find(
+          (category) =>
+            !category.archived &&
+            category.type === "income" &&
+            category.name === "Thu nhập khác",
+        );
+        const generated: Transaction[] = [];
+        const results = entries.map((entry) => {
+          const account = activeById.get(entry.accountId)!;
+          const key = dailyCloseKey(date, entry.accountId);
+          const baseBalanceMinor = balances.get(entry.accountId)!;
+          const inferredIncomeMinor = safeMoney(
+            BigInt(entry.endingBalanceMinor) -
+              BigInt(baseBalanceMinor) +
+              BigInt(entry.expenseMinor),
+          );
+          const base = {
+            accountId: entry.accountId,
+            occurredAt,
+            createdAt: now(),
+            updatedAt: now(),
+            dailyCloseKey: key,
+          };
+          if (entry.expenseMinor > 0)
+            generated.push(
+              transactionSchema.parse({
+                ...base,
+                id: uid(),
+                type: "expense",
+                amountMinor: entry.expenseMinor,
+                categoryId: expenseCategory?.id,
+                title: "Chi tiêu chốt ngày",
+                note: `Tổng chi chưa ghi · ${account.name}`,
+                dailyCloseRole: "expense",
+              }),
+            );
+          if (inferredIncomeMinor > 0)
+            generated.push(
+              transactionSchema.parse({
+                ...base,
+                id: uid(),
+                type: "income",
+                amountMinor: inferredIncomeMinor,
+                categoryId: incomeCategory?.id,
+                title: "Doanh thu chốt ngày",
+                note: `Tự suy ra từ số dư cuối ngày · ${account.name}`,
+                dailyCloseRole: "income",
+              }),
+            );
+          else if (inferredIncomeMinor < 0)
+            generated.push(
+              transactionSchema.parse({
+                ...base,
+                id: uid(),
+                type: "adjustment",
+                amountMinor: inferredIncomeMinor,
+                title: "Chênh lệch chốt ngày",
+                note: `Khớp số dư thực tế · ${account.name}`,
+                dailyCloseRole: "adjustment",
+              }),
+            );
+          return {
+            ...entry,
+            baseBalanceMinor,
+            inferredIncomeMinor,
+          };
+        });
+        await db.transactions.bulkDelete(previous.map((item) => item.id));
+        await db.transactions.bulkAdd(generated);
+        return results;
+      },
     );
   },
 };

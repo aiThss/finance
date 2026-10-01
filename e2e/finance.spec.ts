@@ -59,6 +59,51 @@ test("editing an account sets its current displayed balance", async ({
     page.getByRole("dialog").locator(".select-label-text").first(),
   ).toContainText("Techcombank · 50.407");
 });
+test("daily close reconciles wallet balances and infers revenue", async ({
+  page,
+}) => {
+  await account(page, "Tiền mặt", "100000");
+  await account(page, "Ngân hàng", "200000");
+  await page.goto("/");
+  await page.getByRole("button", { name: /Chốt sổ hôm nay/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Chốt ngày" });
+  await dialog.getByLabel("Số dư cuối ngày · Tiền mặt").fill("400000");
+  await dialog.getByLabel("Tổng chi chưa ghi · Tiền mặt").fill("50000");
+  await expect(dialog.getByText("Doanh thu suy ra").first()).toBeVisible();
+  await expect(dialog).toContainText("+350.000");
+  await page.screenshot({
+    path: ".impeccable/review/mobile.png",
+    animations: "disabled",
+  });
+  await dialog.getByLabel("Số dư cuối ngày · Ngân hàng").fill("150000");
+  await expect(
+    dialog.getByText("Chênh lệch giảm chưa giải thích"),
+  ).toBeVisible();
+  await expect(dialog.locator(".daily-close-summary")).toContainText(
+    "Chênh lệch giảm",
+  );
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.screenshot({
+    path: ".impeccable/review/desktop-sheet.png",
+    animations: "disabled",
+  });
+  await dialog.getByLabel("Số dư cuối ngày · Ngân hàng").fill("200000");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await dialog.getByRole("button", { name: "Chốt và khớp số dư" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator(".hero-amount")).toContainText("600.000");
+  await expect(
+    page.getByRole("button", { name: /Xem lại chốt ngày/ }),
+  ).toBeVisible();
+  await expect(page.locator(".month-summary")).toContainText("350.000");
+  await expect(page.locator(".month-summary")).toContainText("50.000");
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.screenshot({
+    path: ".impeccable/review/desktop.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+});
 test("money lifecycle, budgets, recurring, restore and offline shell", async ({
   page,
   context,

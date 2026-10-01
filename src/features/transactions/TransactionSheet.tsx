@@ -180,6 +180,8 @@ export function TransactionSheet({
             }),
         recurringRuleId: draft.recurringRuleId,
         recurringOccurrence: draft.recurringOccurrence,
+        dailyCloseKey: draft.dailyCloseKey,
+        dailyCloseRole: draft.dailyCloseRole,
       };
       await (draft.id
         ? transactionRepository.update(t)

@@ -15,6 +15,7 @@
 ## Dùng được gì?
 
 - Thu, chi, chuyển tiền; sửa, tìm kiếm, lọc và xóa có hoàn tác/thùng rác.
+- Chốt ngày theo từng ví: nhập số dư thực tế và tổng chi chưa ghi để tự suy ra doanh thu.
 - Tài khoản tiền mặt, ngân hàng, ví điện tử, tiết kiệm, tín dụng; sắp xếp và lưu trữ.
 - Danh mục riêng, ngân sách tháng, lịch thu chi chờ xác nhận từng kỳ.
 - Báo cáo thu chi, dòng tiền, danh mục/cửa hàng, lịch sử tổng số dư.

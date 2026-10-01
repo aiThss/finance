@@ -5,6 +5,7 @@ import {
   accountRepository,
   transactionRepository,
   recurringRepository,
+  dailyCloseRepository,
   uid,
   now,
   snapshot,
@@ -17,6 +18,7 @@ import {
   formatAmountInput,
   nextOccurrence,
   openingBalanceForCurrentBalance,
+  monthKey,
 } from "../domain/money";
 import {
   exportBackup,
@@ -122,6 +124,48 @@ describe("Deterministic money", () => {
       expense: 0,
       net: 0,
     });
+  });
+  it("daily close infers income, records expenses and safely replaces today's close", async () => {
+    await dailyCloseRepository.saveToday([
+      {
+        accountId: a.id,
+        endingBalanceMinor: 400000,
+        expenseMinor: 50000,
+      },
+      {
+        accountId: b.id,
+        endingBalanceMinor: 200000,
+        expenseMinor: 0,
+      },
+    ]);
+    let data = await snapshot();
+    expect(balanceService.getAccountBalance(a, data.transactions)).toBe(400000);
+    expect(
+      reportService.getMonthlySummary(data.transactions, monthKey(new Date())),
+    ).toEqual({ income: 350000, expense: 50000, net: 300000 });
+
+    await dailyCloseRepository.saveToday([
+      {
+        accountId: a.id,
+        endingBalanceMinor: 450000,
+        expenseMinor: 20000,
+      },
+      {
+        accountId: b.id,
+        endingBalanceMinor: 200000,
+        expenseMinor: 0,
+      },
+    ]);
+    data = await snapshot();
+    expect(balanceService.getAccountBalance(a, data.transactions)).toBe(450000);
+    expect(
+      data.transactions.filter(
+        (transaction) => transaction.dailyCloseRole === "expense",
+      ),
+    ).toHaveLength(1);
+    expect(
+      reportService.getMonthlySummary(data.transactions, monthKey(new Date())),
+    ).toEqual({ income: 370000, expense: 20000, net: 350000 });
   });
   it("editing, soft deleting and restoring recalculate from history", async () => {
     const t = makeTransaction({ type: "expense", amountMinor: 20000 });

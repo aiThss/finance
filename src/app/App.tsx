@@ -35,6 +35,7 @@ import { NativeSystemBars } from "./NativeSystemBars";
 import { initialize } from "../db/seed";
 import { AppContext, type Draft } from "./context";
 import { TransactionSheet } from "../features/transactions/TransactionSheet";
+import { DailyCloseSheet } from "../features/daily-close/DailyCloseSheet";
 import { FloatingAIButton } from "./FloatingAIButton";
 export class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -68,6 +69,7 @@ function Shell() {
     draft: Draft;
     onSaved?: () => void;
   } | null>(null);
+  const [dailyCloseOpen, setDailyCloseOpen] = useState(false);
   const [initError, setInitError] = useState("");
   const [toast, setToast] = useState<{
     text: string;
@@ -141,9 +143,10 @@ function Shell() {
     (draft: Draft = {}, onSaved?: () => void) => setEditor({ draft, onSaved }),
     [],
   );
+  const openDailyClose = useCallback(() => setDailyCloseOpen(true), []);
   const actions = useMemo(
-    () => ({ notify, openTransaction }),
-    [notify, openTransaction],
+    () => ({ notify, openTransaction, openDailyClose }),
+    [notify, openTransaction, openDailyClose],
   );
   if (initError) throw new Error(initError);
   if (!ready)
@@ -219,10 +222,10 @@ function Shell() {
         </div>
       )}
       {!Capacitor.isNativePlatform() && (
-        <PwaUpdateManager sheetOpen={!!editor} />
+        <PwaUpdateManager sheetOpen={!!editor || dailyCloseOpen} />
       )}
       {Capacitor.getPlatform() === "android" && (
-        <ApkAutoUpdateManager sheetOpen={!!editor} />
+        <ApkAutoUpdateManager sheetOpen={!!editor || dailyCloseOpen} />
       )}
       {editor && (
         <FinanceScope
@@ -234,6 +237,11 @@ function Shell() {
             onSaved={editor.onSaved}
             onClose={() => setEditor(null)}
           />
+        </FinanceScope>
+      )}
+      {dailyCloseOpen && (
+        <FinanceScope tables={["accounts", "categories", "transactions"]}>
+          <DailyCloseSheet onClose={() => setDailyCloseOpen(false)} />
         </FinanceScope>
       )}
     </AppContext.Provider>

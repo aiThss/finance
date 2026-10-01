@@ -546,6 +546,45 @@ strong {
   display: grid;
   place-items: center;
 }
+.daily-close-cta {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--surface-1);
+  border-color: var(--specular-border);
+  border-top-color: var(--specular-top);
+  border-radius: var(--radius-md);
+  justify-content: flex-start;
+  text-align: left;
+  box-shadow: 0 9px 24px -18px rgba(0, 0, 0, 0.65);
+}
+.daily-close-cta > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  flex: 1;
+}
+.daily-close-cta strong {
+  font-size: 0.9375rem;
+}
+.daily-close-cta small {
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.daily-close-cta-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--accent);
+  background: var(--selected);
+  flex: 0 0 auto;
+}
+.daily-close-cta > svg {
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
 .section-heading {
   display: flex;
   align-items: center;
@@ -1147,6 +1186,121 @@ legend {
 }
 .sheet-header h2 {
   font-size: 1.1875rem;
+}
+.daily-close-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px 0 6px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+.daily-close-intro > svg {
+  color: var(--accent);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.daily-close-transfer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--transfer) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--transfer) 24%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  margin: 10px 0 18px;
+}
+.daily-close-transfer-note > svg {
+  color: var(--transfer);
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.daily-close-list {
+  border-block: 1px solid var(--border);
+}
+.daily-close-account {
+  padding: 18px 0;
+}
+.daily-close-account + .daily-close-account {
+  border-top: 1px solid var(--border);
+}
+.daily-close-account-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.daily-close-account-heading h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.daily-close-account-heading > span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-align: right;
+}
+.daily-close-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.daily-close-fields label {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+.daily-close-fields input {
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.daily-close-result {
+  min-height: 36px;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: var(--selected);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+.daily-close-result.is-negative {
+  background: color-mix(in srgb, var(--expense) 9%, transparent);
+}
+.daily-close-result .money {
+  margin-left: auto;
+  font-weight: 600;
+  text-align: right;
+}
+.daily-close-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+.daily-close-summary > span {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 120px;
+}
+.daily-close-summary > span:last-child {
+  text-align: right;
+}
+.daily-close-summary .money {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.daily-close-footer {
+  gap: 12px;
 }
 .amount-field {
   position: relative;
@@ -2553,6 +2707,12 @@ details.extra-tools[open] summary {
   }
   .balance-card {
     padding: 15px 17px;
+  }
+  .daily-close-cta {
+    padding-inline: 11px;
+  }
+  .daily-close-fields {
+    grid-template-columns: 1fr;
   }
   .hero-amount {
     font-size: 1.8125rem;

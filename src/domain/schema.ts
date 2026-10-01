@@ -46,6 +46,8 @@ export const transactionSchema = z
     occurredAt: stamp,
     recurringRuleId: id.optional(),
     recurringOccurrence: z.string().optional(),
+    dailyCloseKey: z.string().max(128).optional(),
+    dailyCloseRole: z.enum(["expense", "income", "adjustment"]).optional(),
     createdAt: stamp,
     updatedAt: stamp,
     deletedAt: stamp.optional(),

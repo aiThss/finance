@@ -7,6 +7,7 @@ import {
   EyeOff,
   ArrowRight,
   Wallet,
+  BookCheck,
 } from "lucide-react";
 import { format, subMonths } from "date-fns";
 import { vi as dateVi } from "date-fns/locale";
@@ -23,7 +24,7 @@ import { settingsRepository } from "../../db/repositories";
 import { Empty, Money, message } from "../../components/ui/Common";
 import { TransactionRows } from "../../components/finance/TransactionRows";
 export default function Dashboard() {
-  const { data, openTransaction, notify } = useApp();
+  const { data, openTransaction, openDailyClose, notify } = useApp();
   const navigate = useNavigate();
   const month = monthKey(new Date());
   const { totals, previous, recent, totalBalance } = useMemo(() => {
@@ -47,6 +48,11 @@ export default function Dashboard() {
   }, [data.transactions, data.accounts, month]);
   const due = data.recurring.filter(
     (r) => r.enabled && r.nextDate <= dayKey(new Date()),
+  );
+  const closedToday = data.transactions.some(
+    (transaction) =>
+      !transaction.deletedAt &&
+      transaction.dailyCloseKey?.startsWith(`${dayKey(new Date())}:`),
   );
   return (
     <>
@@ -85,6 +91,20 @@ export default function Dashboard() {
           </Link>
         </div>
       </section>
+      {!!activeAccounts(data.accounts).length && (
+        <button className="daily-close-cta" onClick={openDailyClose}>
+          <span className="daily-close-cta-icon">
+            <BookCheck size={21} />
+          </span>
+          <span>
+            <strong>
+              {closedToday ? "Xem lại chốt ngày" : "Chốt sổ hôm nay"}
+            </strong>
+            <small>Số dư cuối + tổng chi → tự tính doanh thu</small>
+          </span>
+          <ArrowRight size={19} />
+        </button>
+      )}
       <div className="section-heading month-heading">
         <h2>Tháng {format(new Date(), "MM / yyyy")}</h2>
         <Link to="/reports">
